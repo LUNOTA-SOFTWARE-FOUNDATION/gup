@@ -43,6 +43,7 @@
 
 /* Most previous input token */
 static struct token last_token;
+static struct token tail_token; /* Previous previous token */
 
 /*
  * A lookup table used to convert token constants
@@ -303,7 +304,12 @@ parse_proc(struct gup_state *state, struct token *tok)
     struct ast_node *root;
     struct datum_type type;
     struct symbol *symbol;
+    bool is_global = false;
     int error;
+
+    if (tail_token.type == TT_PUB) {
+        is_global = true;
+    }
 
     if (state == NULL || tok == NULL) {
         errno = -EINVAL;
@@ -354,6 +360,7 @@ parse_proc(struct gup_state *state, struct token *tok)
     }
 
     /* Set the new symbol */
+    symbol->global = is_global;
     root->symbol = symbol;
 
     /* We expect a ';' or a '{' */
@@ -412,11 +419,14 @@ begin_parse(struct gup_state *state, struct token *tok)
         }
 
         break;
+    case TT_PUB:
+        break;
     default:
         utok(state, tok->type);
         return -1;
     }
 
+    tail_token = *tok;
     return 0;
 }
 
