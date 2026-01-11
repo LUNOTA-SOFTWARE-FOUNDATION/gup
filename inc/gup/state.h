@@ -13,11 +13,13 @@
  *
  * @in_fd: Source input file descriptor
  * @line_no: Line number
+ * @putback: Putback buffer
  * @ptrbox: Global pointer box
  */
 struct gup_state {
     int in_fd;
     size_t line_num;
+    char putback;
     struct ptrbox ptrbox;
 };
 

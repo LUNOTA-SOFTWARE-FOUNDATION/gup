@@ -13,6 +13,22 @@
 #include "gup/trace.h"
 
 /*
+ * Place a byte in the putback buffer
+ *
+ * @state: Compiler state
+ * @c: Byte to place
+ */
+static inline void
+lexer_putback(struct gup_state *state, char c)
+{
+    if (state == NULL) {
+        return;
+    }
+
+    state->putback = c;
+}
+
+/*
  * Returns true if the input character 'c' is
  * a whitespace character
  *
@@ -54,6 +70,16 @@ lexer_nom(struct gup_state *state, bool accept_ws)
 
     if (state == NULL) {
         return '\0';
+    }
+
+    /* Take from the putback buffer if we can */
+    if (state->putback != '\0') {
+        c = state->putback;
+        state->putback = '\0';
+        if (lexer_is_ws(state, c) && accept_ws)
+            return c;
+        if (!lexer_is_ws(state, c))
+            return c;
     }
 
     while (read(state->in_fd, &c, 1) > 0) {
