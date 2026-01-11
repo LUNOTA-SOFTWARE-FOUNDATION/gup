@@ -149,6 +149,37 @@ cg_emit_globvar(struct gup_state *state, struct ast_node *node)
     return mu_cg_var(state, SECTION_DATA, symbol->name, msize, 0);
 }
 
+/*
+ * Emit a break statement
+ *
+ * @state: Compiler state
+ * @node:  Node of break statement
+ */
+static int
+cg_emit_break(struct gup_state *state, struct ast_node *node)
+{
+    char label_buf[32];
+
+    if (state == NULL || node == NULL) {
+        errno = -EINVAL;
+        return -1;
+    }
+
+    if (node->type != AST_BREAK) {
+        errno = -EINVAL;
+        return -1;
+    }
+
+    snprintf(
+        label_buf,
+        sizeof(label_buf),
+        "L.%zu.1",
+        state->loop_count - 1
+    );
+
+    return mu_cg_jmp(state, label_buf);
+}
+
 int
 cg_compile_node(struct gup_state *state, struct ast_node *node)
 {
@@ -182,6 +213,13 @@ cg_compile_node(struct gup_state *state, struct ast_node *node)
         }
 
         break;
+    case AST_BREAK:
+        if (cg_emit_break(state, node) < 0) {
+            return -1;
+        }
+
+        break;
+
     default:
         trace_error(state, "bad AST node [type=%d]\n", node->type);
         return -1;

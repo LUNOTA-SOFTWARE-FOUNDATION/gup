@@ -127,6 +127,32 @@ parse_get_type(tt_t tt)
 }
 
 /*
+ * If we are currently in a loop, return true,
+ * otherwise false.
+ *
+ * @state: Compiler state
+ */
+static bool
+parse_in_loop(struct gup_state *state)
+{
+    tt_t scope;
+
+    if (state == NULL) {
+        return false;
+    }
+
+    scope = scope_top(state);
+    switch (scope) {
+    case TT_LOOP:
+        return true;
+    default:
+        return false;
+    }
+
+    return false;
+}
+
+/*
  * Parse a data type
  *
  * @state: Compiler state
@@ -471,6 +497,39 @@ parse_var(struct gup_state *state, struct token *tok)
 }
 
 /*
+ * Parse a break statement
+ *
+ * @state: Compiler state
+ * @tok: Last token
+ */
+static int
+parse_break(struct gup_state *state, struct token *tok)
+{
+    struct ast_node *node;
+
+    if (state == NULL || tok == NULL) {
+        errno = -EINVAL;
+        return -1;
+    }
+
+    if (!parse_in_loop(state)) {
+        trace_error(state, "break statement not in a loop\n");
+        return -1;
+    }
+
+    if (parse_expect(state, tok, TT_SEMI) < 0) {
+        return -1;
+    }
+
+    if (ast_alloc_node(state, AST_BREAK, &node) < 0) {
+        trace_error(state, "failed to allocate AST_BREAK\n");
+        return -1;
+    }
+
+    return cg_compile_node(state, node);
+}
+
+/*
  * Begin parsing tokens from the input source
  *
  * @state: Compiler state
@@ -505,6 +564,12 @@ begin_parse(struct gup_state *state, struct token *tok)
         break;
     case TT_LOOP:
         if (parse_loop(state, tok) < 0) {
+            return -1;
+        }
+
+        break;
+    case TT_BREAK:
+        if (parse_break(state, tok) < 0) {
             return -1;
         }
 

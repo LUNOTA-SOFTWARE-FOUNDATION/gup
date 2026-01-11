@@ -19,13 +19,15 @@
  * @AST_PROC: Procedure
  * @AST_LOOP: Loop block
  * @AST_GLOBVAR: Global variable
+ * @AST_BREAK:   Break statement
  */
 typedef enum {
     AST_NONE,
     AST_ASM,
     AST_PROC,
     AST_LOOP,
-    AST_GLOBVAR
+    AST_GLOBVAR,
+    AST_BREAK,
 } ast_op_t;
 
 /*
