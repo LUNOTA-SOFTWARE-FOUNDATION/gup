@@ -62,6 +62,16 @@ int mu_cg_ret(struct gup_state *state);
 int mu_cg_jmp(struct gup_state *state, const char *s);
 
 /*
+ * Emit a call to a label
+ *
+ * @state: Compiler state
+ * @s:     Label to call
+ *
+ * Returns zero on success
+ */
+int mu_cg_call(struct gup_state *state, const char *s);
+
+/*
  * Emit a variable
  *
  * @state: Compiler state

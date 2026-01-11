@@ -153,3 +153,20 @@ mu_cg_var(struct gup_state *state, bin_section_t sect, const char *label,
 
     return 0;
 }
+
+int
+mu_cg_call(struct gup_state *state, const char *s)
+{
+    if (state == NULL || s == NULL) {
+        errno = -EINVAL;
+        return -1;
+    }
+
+    fprintf(
+        state->out_fp,
+        "\tcall %s\n",
+        s
+    );
+
+    return 0;
+}
