@@ -14,9 +14,11 @@
  * Represents valid AST node types
  *
  * @AST_NONE: No type specified
+ * @AST_ASM:  Inline-assembly
  */
 typedef enum {
-    AST_NONE
+    AST_NONE,
+    AST_ASM
 } ast_op_t;
 
 /*
@@ -31,6 +33,9 @@ struct ast_node {
     ast_op_t type;
     struct ast_node *left;
     struct ast_node *right;
+    union {
+        char *s;
+    };
 };
 
 /*

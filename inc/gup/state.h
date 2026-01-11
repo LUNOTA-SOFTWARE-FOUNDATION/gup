@@ -6,7 +6,10 @@
 #ifndef GUP_STATE_H
 #define GUP_STATE_H
 
+#include <stdio.h>
 #include "gup/ptrbox.h"
+
+#define DEFAULT_ASMOUT "gupgen.asm"
 
 /*
  * Represents the compiler state
@@ -15,12 +18,14 @@
  * @line_no: Line number
  * @putback: Putback buffer
  * @ptrbox: Global pointer box
+ * @out_fp: Output file
  */
 struct gup_state {
     int in_fd;
     size_t line_num;
     char putback;
     struct ptrbox ptrbox;
+    FILE *out_fp;
 };
 
 /*

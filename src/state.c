@@ -29,6 +29,12 @@ gup_state_init(const char *path, struct gup_state *state)
         return -1;
     }
 
+    state->out_fp = fopen(DEFAULT_ASMOUT, "w");
+    if (state->out_fp == NULL) {
+        close(state->in_fd);
+        return -1;
+    }
+
     state->line_num = 1;
     return 0;
 }
@@ -41,5 +47,6 @@ gup_state_destroy(struct gup_state *state)
     }
 
     close(state->in_fd);
+    fclose(state->out_fp);
     ptrbox_destroy(&state->ptrbox);
 }

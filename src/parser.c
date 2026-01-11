@@ -10,6 +10,8 @@
 #include "gup/token.h"
 #include "gup/lexer.h"
 #include "gup/trace.h"
+#include "gup/ast.h"
+#include "gup/codegen.h"
 
 /* Most previous input token */
 static struct token last_token;
@@ -45,13 +47,20 @@ static const char *toktab[] = {
 static int
 parse_asm(struct gup_state *state, struct token *tok)
 {
+    struct ast_node *node;
+
     if (state == NULL || tok == NULL) {
         errno = -EINVAL;
         return -1;
     }
 
-    printf("got asm: %s\n", tok->s);
-    return 0;
+    if (ast_alloc_node(state, AST_ASM, &node) < 0) {
+        trace_error(state, "failed to allocate AST_ASM\n");
+        return -1;
+    }
+
+    node->s = tok->s;
+    return cg_compile_node(state, node);
 }
 
 /*
