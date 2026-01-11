@@ -75,6 +75,32 @@ static const char *toktab[] = {
 };
 
 /*
+ * Lookbehind current token
+ *
+ * @n: Number of steps to look behind
+ * @tok: Result is written here
+ *
+ * XXX: 'n' being zero returns the current token
+ *
+ * TODO: Use a token buffer
+ */
+static inline int
+parse_lookbehind(size_t n, struct token *tok)
+{
+    if (n == 0) {
+        *tok = last_token;
+        return 0;
+    }
+
+    if (n > 1) {
+        return -1;
+    }
+
+    *tok = tail_token;
+    return 0;
+}
+
+/*
  * Get a data type from a lexical token type
  *
  * @tt: Token type to test
@@ -302,18 +328,24 @@ static int
 parse_proc(struct gup_state *state, struct token *tok)
 {
     struct ast_node *root;
+    struct token prev_tok;
     struct datum_type type;
     struct symbol *symbol;
     bool is_global = false;
     int error;
 
-    if (tail_token.type == TT_PUB) {
-        is_global = true;
-    }
-
     if (state == NULL || tok == NULL) {
         errno = -EINVAL;
         return -1;
+    }
+
+    if (parse_lookbehind(1, &prev_tok) < 0) {
+        trace_error(state, "lookbehind failure\n");
+        return -1;
+    }
+
+    if (prev_tok.type == TT_PUB) {
+        is_global = true;
     }
 
     if (parse_expect(state, tok, TT_IDENT) < 0) {
