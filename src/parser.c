@@ -460,6 +460,8 @@ begin_parse(struct gup_state *state, struct token *tok)
 int
 gup_parse(struct gup_state *state)
 {
+    int error = 0;
+
     if (state == NULL) {
         errno = -EINVAL;
         return -1;
@@ -467,12 +469,12 @@ gup_parse(struct gup_state *state)
 
     while (lexer_scan(state, &last_token) == 0) {
         trace_debug("got token %s\n", toktab[last_token.type]);
-        if (begin_parse(state, &last_token) < 0) {
+        if ((error = begin_parse(state, &last_token)) < 0) {
             break;
         }
     }
 
-    if (scope_top(state) != TT_NONE) {
+    if (scope_top(state) != TT_NONE && error == 0) {
         ueof(state);
         trace_warn("missing RBRACE ('}') ?\n");
         return -1;
