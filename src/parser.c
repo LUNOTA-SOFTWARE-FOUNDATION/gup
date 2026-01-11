@@ -13,6 +13,7 @@
 #include "gup/ast.h"
 #include "gup/codegen.h"
 #include "gup/types.h"
+#include "gup/scope.h"
 
 #define tokstr(tt)          \
     toktab[(tt)]
@@ -121,69 +122,6 @@ parse_get_type(tt_t tt)
     }
 
     return GUP_TYPE_BAD;
-}
-
-/*
- * Push a scope token onto the scope stack
- *
- * @state:      Compiler state
- * @scope_tok:  Scope token
- *
- * Returns zero on success
- */
-static int
-scope_push(struct gup_state *state, tt_t scope_tok)
-{
-    if (state == NULL) {
-        errno = -EINVAL;
-        return -1;
-    }
-
-    if (state->scope_depth >= MAX_SCOPE_DEPTH) {
-        trace_error(state, "maximum scope depth reached\n");
-        return -1;
-    }
-
-    state->scope_stack[state->scope_depth++] = scope_tok;
-    return 0;
-}
-
-/*
- * Obtain the most previous scope
- *
- * @state: Compiler state
- */
-static tt_t
-scope_top(struct gup_state *state)
-{
-    if (state == NULL) {
-        return TT_NONE;
-    }
-
-    if (state->scope_depth == 0) {
-        return state->scope_stack[0];
-    }
-
-    return state->scope_stack[state->scope_depth - 1];
-}
-
-/*
- * Pop a scope from the scope stack
- *
- * @state: Compiler state
- */
-static tt_t
-scope_pop(struct gup_state *state)
-{
-    tt_t scope;
-
-    if (state->scope_depth == 0) {
-        return state->scope_stack[0];
-    }
-
-    scope = state->scope_stack[--state->scope_depth];
-    state->scope_stack[state->scope_depth] = TT_NONE;
-    return scope;
 }
 
 /*
