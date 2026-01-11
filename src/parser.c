@@ -14,6 +14,27 @@
 #include "gup/codegen.h"
 #include "gup/types.h"
 
+#define tokstr(tt)          \
+    toktab[(tt)]
+
+#define tokstr1(tok)        \
+    tokstr((tok)->type)
+
+#define utok(state, tt)          \
+    trace_error(                 \
+        state,                   \
+        "unexpected token %s\n", \
+        tokstr(tt)               \
+    );
+
+#define utok1(state, exp, got)           \
+    trace_error(                         \
+        state,                           \
+        "expected %s, got %s instead\n", \
+        exp,                             \
+        got                              \
+    );
+
 #define ueof(state)                 \
     trace_error(                    \
         state,                      \
@@ -87,11 +108,7 @@ parse_type(struct gup_state *state, struct token *tok, struct datum_type *res)
 
     type = parse_get_type(tok->type);
     if (type == GUP_TYPE_BAD) {
-        trace_error(
-            state,
-            "got bad token %s, expected type\n",
-            toktab[tok->type]
-        );
+        utok1(state, "TYPE", tokstr1(tok));
         return -1;
     }
 
@@ -123,13 +140,7 @@ parse_expect(struct gup_state *state, struct token *tok, tt_t what)
 
     /* This must match */
     if (tok->type != what) {
-        trace_error(
-            state,
-            "expected %s, got %s\n",
-            toktab[what],
-            toktab[tok->type]
-        );
-
+        utok1(state, tokstr(what), tokstr1(tok));
         return -1;
     }
 
@@ -236,7 +247,7 @@ begin_parse(struct gup_state *state, struct token *tok)
 
         break;
     default:
-        trace_error(state, "got unexpected token %s\n", toktab[tok->type]);
+        utok(state, tok->type);
         return -1;
     }
 
