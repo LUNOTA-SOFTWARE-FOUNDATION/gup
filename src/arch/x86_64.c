@@ -5,6 +5,38 @@
 
 #include <errno.h>
 #include "gup/mu.h"
+#include "gup/state.h"
+
+static const char *sectab[] = {
+    [SECTION_NONE] = "none",
+    [SECTION_TEXT] = ".text",
+    [SECTION_DATA] = ".data",
+    [SECTION_BSS]  = ".bss"
+};
+
+/*
+ * Ensure that we are currently in the desired section
+ *
+ * @state: Compiler state
+ * @what:  Expected section
+ */
+static void
+cg_assert_section(struct gup_state *state, bin_section_t what)
+{
+    if (state == NULL) {
+        return;
+    }
+
+    if (state->cur_section != what) {
+        fprintf(
+            state->out_fp,
+            "[section %s]\n",
+            sectab[what]
+        );
+
+        state->cur_section = what;
+    }
+}
 
 int
 mu_cg_inject(struct gup_state *state, const char *str)
@@ -14,6 +46,7 @@ mu_cg_inject(struct gup_state *state, const char *str)
         return -1;
     }
 
+    cg_assert_section(state, SECTION_TEXT);
     fprintf(
         state->out_fp,
         "\t%s\n",
@@ -30,6 +63,7 @@ mu_cg_label(struct gup_state *state, const char *s, bool is_global)
         return -1;
     }
 
+    cg_assert_section(state, SECTION_TEXT);
     if (is_global) {
         fprintf(
             state->out_fp,

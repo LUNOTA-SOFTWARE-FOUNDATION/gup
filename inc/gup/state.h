@@ -15,6 +15,18 @@
 #define MAX_SCOPE_DEPTH 8
 
 /*
+ * Represents valid sections within the output
+ * binary
+ */
+typedef enum {
+    SECTION_NONE,
+    SECTION_TEXT,
+    SECTION_DATA,
+    SECTION_BSS,
+    SECTION_MAX
+} bin_section_t;
+
+/*
  * Represents the compiler state
  *
  * @in_fd: Source input file descriptor
@@ -24,6 +36,7 @@
  * @symtab: Global symbol table
  * @scope_stack: Keeps track of scopes
  * @scope_depth: Current scope depth
+ * @cur_section: Current section
  * @out_fp: Output file
  */
 struct gup_state {
@@ -34,6 +47,7 @@ struct gup_state {
     struct symbol_table symtab;
     tt_t scope_stack[MAX_SCOPE_DEPTH];
     size_t scope_depth;
+    bin_section_t cur_section;
     FILE *out_fp;
 };
 
