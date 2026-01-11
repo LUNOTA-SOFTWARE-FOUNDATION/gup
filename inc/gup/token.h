@@ -32,6 +32,7 @@ typedef enum {
     TT_VOID,        /* 'void' */
     TT_PUB,         /* 'pub' */
     TT_PROC,        /* 'proc' */
+    TT_LOOP,        /* 'loop' */
     TT_NUMBER,      /* <NUMBER> */
     TT_IDENT,       /* <IDENTIFIER> */
 } tt_t;
