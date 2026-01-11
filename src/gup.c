@@ -4,7 +4,9 @@
  */
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <unistd.h>
+#include <string.h>
 #include <time.h>
 #include "gup/state.h"
 #include "gup/parser.h"
@@ -14,6 +16,9 @@
     (double)((ENDP)->tv_sec - (STARTP)->tv_sec) * 1.0e9 +    \
         (double)((ENDP)->tv_nsec - (STARTP)->tv_nsec)
 
+static bool asm_only = false;
+static const char *bin_fmt = "elf64";
+
 static void
 help(void)
 {
@@ -22,6 +27,10 @@ help(void)
         "-----------------------------\n"
         "[-h]   Display this help menu\n"
         "[-v]   Display the version\n"
+        "[-a]   Assembly output only\n"
+        "[-f]   Output format\n"
+        "...... [elf64]\n"
+        "...... [bin]\n"
     );
 }
 
@@ -35,6 +44,23 @@ version(void)
         "------------------------------\n",
         GUP_VERSION
     );
+}
+
+static void
+assemble(const char *path)
+{
+    char cmd[64];
+
+    snprintf(
+        cmd,
+        sizeof(cmd),
+        "nasm -f%s %s",
+        bin_fmt,
+        path
+    );
+
+    system(cmd);
+    remove(path);
 }
 
 static int
@@ -60,9 +86,13 @@ compile(const char *path)
     clock_gettime(CLOCK_REALTIME, &end);
     elapsed_ns = ELAPSED_NS(&start, &end);
     elapsed_ms = elapsed_ns / 1e+6;
-
     printf("compiled in %.2fms [%.2fns]\n", elapsed_ms, elapsed_ns);
+
     gup_state_destroy(&state);
+    if (!asm_only) {
+        assemble(DEFAULT_ASMOUT);
+    }
+
     return 0;
 }
 
@@ -77,7 +107,7 @@ main(int argc, char **argv)
         return -1;
     }
 
-    while ((opt = getopt(argc, argv, "hv")) != -1) {
+    while ((opt = getopt(argc, argv, "hvaf:")) != -1) {
         switch (opt) {
         case 'h':
             help();
@@ -85,6 +115,12 @@ main(int argc, char **argv)
         case 'v':
             version();
             return -1;
+        case 'a':
+            asm_only = true;
+            break;
+        case 'f':
+            bin_fmt = strdup(optarg);
+            break;
         }
     }
 
