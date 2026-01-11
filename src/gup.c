@@ -5,6 +5,7 @@
 
 #include <stdio.h>
 #include <unistd.h>
+#include "gup/state.h"
 
 #define GUP_VERSION "0.0.1"
 
@@ -31,6 +32,23 @@ version(void)
     );
 }
 
+static int
+compile(const char *path)
+{
+    struct gup_state state;
+
+    if (path == NULL) {
+        return -1;
+    }
+
+    if (gup_state_init(path, &state) < 0) {
+        return -1;
+    }
+
+    gup_state_destroy(&state);
+    return 0;
+}
+
 int
 main(int argc, char **argv)
 {
@@ -52,5 +70,12 @@ main(int argc, char **argv)
             return -1;
         }
     }
+
+    while (optind < argc) {
+        if (compile(argv[optind++]) < 0) {
+            return -1;
+        }
+    }
+
     return 0;
 }

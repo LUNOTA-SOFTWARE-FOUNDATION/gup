@@ -1,0 +1,37 @@
+/*
+ * Copyright (c) 2026, Ian Moffett.
+ * Provided under the BSD-3 clause.
+ */
+
+#include <errno.h>
+#include <unistd.h>
+#include <string.h>
+#include <fcntl.h>
+#include "gup/state.h"
+
+int
+gup_state_init(const char *path, struct gup_state *state)
+{
+    if (path == NULL || state == NULL) {
+        errno = -EINVAL;
+        return -1;
+    }
+
+    memset(state, 0, sizeof(*state));
+    state->in_fd = open(path, O_RDONLY);
+    if (state->in_fd < 0) {
+        return -1;
+    }
+
+    return 0;
+}
+
+void
+gup_state_destroy(struct gup_state *state)
+{
+    if (state == NULL) {
+        return;
+    }
+
+    close(state->in_fd);
+}
