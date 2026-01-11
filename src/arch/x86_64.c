@@ -16,7 +16,7 @@ mu_cg_inject(struct gup_state *state, const char *str)
 
     fprintf(
         state->out_fp,
-        "%s\n",
+        "\t%s\n",
         str
     );
     return 0;
