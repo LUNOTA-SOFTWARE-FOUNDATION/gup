@@ -18,9 +18,13 @@ static struct token last_token;
  * to human readable strings.
  */
 static const char *toktab[] = {
-    [TT_NONE]   =  "NONE",
-    [TT_ASM]     = "ASM",
-    [TT_SEMI]   =  "SEMICOLON"
+    [TT_NONE]   = "NONE",
+    [TT_ASM]    = "ASM",
+    [TT_SEMI]   = "SEMICOLON",
+    [TT_STAR]   = "STAR",
+    [TT_PLUS]   = "PLUS",
+    [TT_MINUS]  = "MINUS",
+    [TT_SLASH]  = "SLASH"
 };
 
 int

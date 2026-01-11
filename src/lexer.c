@@ -188,6 +188,22 @@ lexer_scan(struct gup_state *state, struct token *res)
         res->type = TT_SEMI;
         res->c = c;
         return 0;
+    case '*':
+        res->type = TT_STAR;
+        res->c = c;
+        return 0;
+    case '+':
+        res->type = TT_PLUS;
+        res->c = c;
+        return 0;
+    case '-':
+        res->type = TT_MINUS;
+        res->c = c;
+        return 0;
+    case '/':
+        res->type = TT_SLASH;
+        res->c = c;
+        return 0;
     }
 
     return -1;
