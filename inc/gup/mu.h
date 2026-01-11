@@ -39,4 +39,14 @@ int mu_cg_label(struct gup_state *state, const char *s, bool is_global);
  */
 int mu_cg_ret(struct gup_state *state);
 
+/*
+ * Emit a jump to a label
+ *
+ * @state: Compiler state
+ * @s:     Label to jump to
+ *
+ * Returns zero on success
+ */
+int mu_cg_jmp(struct gup_state *state, const char *s);
+
 #endif  /* !GUP_MU_H */

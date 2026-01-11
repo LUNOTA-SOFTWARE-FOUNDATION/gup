@@ -96,3 +96,19 @@ mu_cg_ret(struct gup_state *state)
 
     return 0;
 }
+
+int
+mu_cg_jmp(struct gup_state *state, const char *s)
+{
+    if (state == NULL || s == NULL) {
+        errno = -EINVAL;
+        return -1;
+    }
+
+    fprintf(
+        state->out_fp,
+        "\tjmp %s\n", s
+    );
+
+    return 0;
+}
