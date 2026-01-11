@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include "gup/state.h"
+#include "gup/parser.h"
 
 #define GUP_VERSION "0.0.1"
 
@@ -42,6 +43,10 @@ compile(const char *path)
     }
 
     if (gup_state_init(path, &state) < 0) {
+        return -1;
+    }
+
+    if (gup_parse(&state) < 0) {
         return -1;
     }
 
