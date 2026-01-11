@@ -11,7 +11,7 @@
  */
 typedef enum {
     TT_NONE,        /* <NONE> */
-    TT_AT,          /* '@' */
+    TT_ASM,         /* '@' */
     TT_SEMI,        /* ';' */
 } tt_t;
 
@@ -25,6 +25,7 @@ struct token {
     tt_t type;
     union {
         char c;
+        char *s;
     };
 };
 
