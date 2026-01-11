@@ -10,15 +10,15 @@
 #include "gup/state.h"
 
 #define trace_error(gup_state, fmt, ...)    \
-    printf("[error]: " fmt, ##__VA_ARGS__); \
+    printf("[\033[90;91merror\033[0m]: " fmt, ##__VA_ARGS__); \
     printf("[near line %zu]\n", (gup_state)->line_num);
 #define trace_warn(fmt, ...)   \
-    printf("[warn]: " fmt, ##__VA_ARGS__)
+    printf("[\033[90;95mwarn\033[0m]: " fmt, ##__VA_ARGS__)
 
 #define DEBUG 0
 #if DEBUG
 #define trace_debug(fmt, ...)   \
-    printf("[debug]: " fmt, ##__VA_ARGS__)
+    printf("[\033[90;94mdebug\033[0m]: " fmt, ##__VA_ARGS__)
 #else
 #define trace_debug(...) (void)0
 #endif  /* DEBUG */
