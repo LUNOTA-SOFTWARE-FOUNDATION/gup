@@ -30,4 +30,13 @@ int mu_cg_inject(struct gup_state *state, const char *str);
  */
 int mu_cg_label(struct gup_state *state, const char *s, bool is_global);
 
+/*
+ * Emit a return instruction or architectural equivalent
+ *
+ * @state: Compiler state
+ *
+ * Returns zero on success
+ */
+int mu_cg_ret(struct gup_state *state);
+
 #endif  /* !GUP_MU_H */
