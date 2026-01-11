@@ -7,11 +7,21 @@
 #include "gup/mu.h"
 #include "gup/state.h"
 
+/* Section lookup table */
 static const char *sectab[] = {
     [SECTION_NONE] = "none",
     [SECTION_TEXT] = ".text",
     [SECTION_DATA] = ".data",
     [SECTION_BSS]  = ".bss"
+};
+
+/* Define <n> size lookup table */
+static const char *dsztab[] = {
+    [MSIZE_BAD]  = "bad",
+    [MSIZE_BYTE] = "db",
+    [MSIZE_WORD] = "dw",
+    [MSIZE_DWORD] = "dd",
+    [MSIZE_QWORD] = "dq"
 };
 
 /*
@@ -108,6 +118,37 @@ mu_cg_jmp(struct gup_state *state, const char *s)
     fprintf(
         state->out_fp,
         "\tjmp %s\n", s
+    );
+
+    return 0;
+}
+
+int
+mu_cg_var(struct gup_state *state, bin_section_t sect, const char *label,
+    msize_t size, ssize_t ival)
+{
+    if (state == NULL || label == NULL) {
+        errno = -EINVAL;
+        return -1;
+    }
+
+    if (size >= MSIZE_MAX) {
+        errno = -EINVAL;
+        return -1;
+    }
+
+    if (sect >= SECTION_MAX) {
+        errno = -EINVAL;
+        return -1;
+    }
+
+    cg_assert_section(state, sect);
+    fprintf(
+        state->out_fp,
+        "%s: %s %zd\n",
+        label,
+        dsztab[size],
+        ival
     );
 
     return 0;

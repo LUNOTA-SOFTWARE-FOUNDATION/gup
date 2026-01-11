@@ -9,6 +9,20 @@
 #include "gup/codegen.h"
 #include "gup/mu.h"
 
+static inline msize_t
+type_to_msize(gup_type_t type)
+{
+    switch (type) {
+    case GUP_TYPE_U8:  return MSIZE_BYTE;
+    case GUP_TYPE_U16: return MSIZE_WORD;
+    case GUP_TYPE_U32: return MSIZE_DWORD;
+    case GUP_TYPE_U64: return MSIZE_QWORD;
+    default:           return MSIZE_BAD;
+    }
+
+    return MSIZE_BAD;
+}
+
 /*
  * Emit inline-assembly from an AST node
  *
@@ -107,6 +121,34 @@ cg_emit_loop(struct gup_state *state, struct ast_node *node)
     return 0;
 }
 
+/*
+ * Emit a global variable
+ *
+ * @state: Compiler state
+ * @node:  Node of global variable
+ */
+static int
+cg_emit_globvar(struct gup_state *state, struct ast_node *node)
+{
+    struct datum_type *dtype;
+    struct symbol *symbol;
+    msize_t msize;
+
+    if (state == NULL || node == NULL) {
+        errno = -EINVAL;
+        return -1;
+    }
+
+    if ((symbol = node->symbol) == NULL) {
+        errno = -EIO;
+        return -1;
+    }
+
+    dtype = &symbol->data_type;
+    msize = type_to_msize(dtype->type);
+    return mu_cg_var(state, SECTION_DATA, symbol->name, msize, 0);
+}
+
 int
 cg_compile_node(struct gup_state *state, struct ast_node *node)
 {
@@ -130,6 +172,12 @@ cg_compile_node(struct gup_state *state, struct ast_node *node)
         break;
     case AST_LOOP:
         if (cg_emit_loop(state, node) < 0) {
+            return -1;
+        }
+
+        break;
+    case AST_GLOBVAR:
+        if (cg_emit_globvar(state, node) < 0) {
             return -1;
         }
 

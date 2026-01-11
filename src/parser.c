@@ -408,6 +408,68 @@ parse_loop(struct gup_state *state, struct token *tok)
 }
 
 /*
+ * Parse a variable
+ *
+ * @state: Compiler state
+ * @tok:   Last token
+ *
+ * Returns zero on success
+ */
+static int
+parse_var(struct gup_state *state, struct token *tok)
+{
+    struct datum_type type;
+    struct symbol *symbol;
+    struct ast_node *root;
+    int error;
+
+    if (state == NULL || tok == NULL) {
+        errno = -EINVAL;
+        return -1;
+    }
+
+    /* TODO: Add support for local variables */
+    if (scope_top(state) != TT_NONE) {
+        trace_error(state, "only globals are supported now\n");
+        return -1;
+    }
+
+    /* We need a type */
+    if (parse_type(state, tok, &type) < 0) {
+        return -1;
+    }
+
+    /* Now an identifier */
+    if (parse_expect(state, tok, TT_IDENT) < 0) {
+        return -1;
+    }
+
+    error = symbol_new(
+        &state->symtab,
+        tok->s,
+        type.type,
+        &symbol
+    );
+
+    if (error < 0) {
+        trace_error(state, "failed to create symbol\n");
+        return -1;
+    }
+
+    if (ast_alloc_node(state, AST_GLOBVAR, &root) < 0) {
+        trace_error(state, "failed to allocate AST_GLOBVAR\n");
+        return -1;
+    }
+
+    root->symbol = symbol;
+    if (parse_expect(state, tok, TT_SEMI) < 0) {
+        return -1;
+    }
+
+    return cg_compile_node(state, root);
+}
+
+/*
  * Begin parsing tokens from the input source
  *
  * @state: Compiler state
@@ -449,6 +511,10 @@ begin_parse(struct gup_state *state, struct token *tok)
     case TT_PUB:
         break;
     default:
+        if (parse_var(state, tok) == 0) {
+            break;
+        }
+
         utok(state, tok->type);
         return -1;
     }

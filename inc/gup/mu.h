@@ -10,6 +10,18 @@
 #include "gup/state.h"
 
 /*
+ * Valid machine sizes
+ */
+typedef enum {
+    MSIZE_BAD,
+    MSIZE_BYTE,     /* 8 bits */
+    MSIZE_WORD,     /* 16 bits */
+    MSIZE_DWORD,    /* 32 bits */
+    MSIZE_QWORD,    /* 64 bits */
+    MSIZE_MAX,
+} msize_t;
+
+/*
  * Inject assembly into the program
  *
  * @state: Compiler state
@@ -48,5 +60,21 @@ int mu_cg_ret(struct gup_state *state);
  * Returns zero on success
  */
 int mu_cg_jmp(struct gup_state *state, const char *s);
+
+/*
+ * Emit a variable
+ *
+ * @state: Compiler state
+ * @sect:  Section to put label in
+ * @label: Label of variable to create
+ * @size:  Variable size
+ * @ival:  Initial value
+ *
+ * Returns zero on success
+ */
+int mu_cg_var(
+    struct gup_state *state, bin_section_t sect,
+    const char *label, msize_t size, ssize_t ival
+);
 
 #endif  /* !GUP_MU_H */
