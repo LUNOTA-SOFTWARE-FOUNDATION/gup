@@ -298,6 +298,7 @@ parse_lbrace(struct gup_state *state, tt_t block, struct token *tok)
 static int
 parse_proc(struct gup_state *state, struct token *tok)
 {
+    struct ast_node *root;
     struct datum_type type;
 
     if (state == NULL || tok == NULL) {
@@ -306,6 +307,16 @@ parse_proc(struct gup_state *state, struct token *tok)
     }
 
     if (parse_expect(state, tok, TT_IDENT) < 0) {
+        return -1;
+    }
+
+    if (ast_alloc_node(state, AST_PROC, &root) < 0) {
+        return -1;
+    }
+
+    /* Duplicate the identifier */
+    root->s = ptrbox_strdup(&state->ptrbox, tok->s);
+    if (root->s == NULL) {
         return -1;
     }
 
@@ -339,13 +350,13 @@ parse_proc(struct gup_state *state, struct token *tok)
             return -1;
         }
 
-        return 0;
+        return cg_compile_node(state, root);
     default:
         utok(state, tok->type);
         return -1;
     }
 
-    return 0;
+    return -1;
 }
 
 /*

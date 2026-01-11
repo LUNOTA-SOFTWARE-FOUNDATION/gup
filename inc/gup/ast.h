@@ -15,10 +15,12 @@
  *
  * @AST_NONE: No type specified
  * @AST_ASM:  Inline-assembly
+ * @AST_PROC: Procedure
  */
 typedef enum {
     AST_NONE,
-    AST_ASM
+    AST_ASM,
+    AST_PROC,
 } ast_op_t;
 
 /*

@@ -30,6 +30,25 @@ cg_emit_asm(struct gup_state *state, struct ast_node *node)
     return 0;
 }
 
+static int
+cg_emit_proc(struct gup_state *state, struct ast_node *node)
+{
+    if (state == NULL || node == NULL) {
+        errno = -EINVAL;
+        return -1;
+    }
+
+    if (node->type != AST_PROC) {
+        errno = -EINVAL;
+        return -1;
+    }
+
+    if (node->s != NULL) {
+        mu_cg_label(state, node->s, true);
+    }
+    return 0;
+}
+
 int
 cg_compile_node(struct gup_state *state, struct ast_node *node)
 {
@@ -41,6 +60,12 @@ cg_compile_node(struct gup_state *state, struct ast_node *node)
     switch (node->type) {
     case AST_ASM:
         if (cg_emit_asm(state, node) < 0) {
+            return -1;
+        }
+
+        break;
+    case AST_PROC:
+        if (cg_emit_proc(state, node) < 0) {
             return -1;
         }
 
