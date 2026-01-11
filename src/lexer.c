@@ -5,6 +5,7 @@
 
 #include <stdint.h>
 #include <errno.h>
+#include <ctype.h>
 #include <unistd.h>
 #include <stddef.h>
 #include <stdlib.h>
@@ -162,6 +163,60 @@ lexer_scan_asm(struct gup_state *state, struct token *res)
     return 0;
 }
 
+/*
+ * Scan a number in the source input
+ *
+ * @state: Compiler state
+ * @lc: Last character
+ * @res: Token result is written here
+ *
+ * Returns zero on success
+ */
+static int
+lexer_scan_num(struct gup_state *state, int lc, struct token *res)
+{
+    char buf[22];
+    uint8_t buf_i = 0;
+    char c;
+
+    if (state == NULL || res == NULL) {
+        errno = -EINVAL;
+        return -1;
+    }
+
+    buf[buf_i++] = lc;
+    for (;;) {
+        if ((c = lexer_nom(state, false)) == '\0') {
+            buf[buf_i] = '\0';
+            break;
+        }
+
+        /*
+         * Sometimes large numbers may be hard to read, the '_'
+         * character is valid to seperate digits and serves no
+         * programmatic purpose.
+         */
+        if (c == '_') {
+            continue;
+        }
+
+        if (!isdigit(c)) {
+            buf[buf_i] = '\0';
+            break;
+        }
+
+        buf[buf_i++] = c;
+        if (buf_i >= sizeof(buf) - 1) {
+            buf[buf_i] = '\0';
+            break;
+        }
+    }
+
+    res->v = atoi(buf);
+    res->type = TT_NUMBER;
+    return 0;
+}
+
 int
 lexer_scan(struct gup_state *state, struct token *res)
 {
@@ -204,6 +259,15 @@ lexer_scan(struct gup_state *state, struct token *res)
         res->type = TT_SLASH;
         res->c = c;
         return 0;
+    default:
+        /* Is this a digit? */
+        if (isdigit(c)) {
+            if (lexer_scan_num(state, c, res) < 0)
+                return -1;
+
+            return 0;
+        }
+
     }
 
     return -1;

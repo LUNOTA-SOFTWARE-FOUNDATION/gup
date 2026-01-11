@@ -6,6 +6,8 @@
 #ifndef GUP_TOKEN_H
 #define GUP_TOKEN_H
 
+#include <sys/types.h>
+
 /*
  * Represents valid token types
  */
@@ -17,6 +19,7 @@ typedef enum {
     TT_PLUS,        /* '+' */
     TT_MINUS,       /* '-' */
     TT_SLASH,       /* '/' */
+    TT_NUMBER,      /* <NUMBER> */
 } tt_t;
 
 /*
@@ -30,6 +33,7 @@ struct token {
     union {
         char c;
         char *s;
+        ssize_t v;
     };
 };
 
