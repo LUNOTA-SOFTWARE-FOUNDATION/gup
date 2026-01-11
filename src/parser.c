@@ -95,6 +95,69 @@ parse_get_type(tt_t tt)
 }
 
 /*
+ * Push a scope token onto the scope stack
+ *
+ * @state:      Compiler state
+ * @scope_tok:  Scope token
+ *
+ * Returns zero on success
+ */
+static int
+scope_push(struct gup_state *state, tt_t scope_tok)
+{
+    if (state == NULL) {
+        errno = -EINVAL;
+        return -1;
+    }
+
+    if (state->scope_depth >= MAX_SCOPE_DEPTH) {
+        trace_error(state, "maximum scope depth reached\n");
+        return -1;
+    }
+
+    state->scope_stack[state->scope_depth++] = scope_tok;
+    return 0;
+}
+
+/*
+ * Obtain the most previous scope
+ *
+ * @state: Compiler state
+ */
+static tt_t
+scope_top(struct gup_state *state)
+{
+    if (state == NULL) {
+        return TT_NONE;
+    }
+
+    if (state->scope_depth == 0) {
+        return state->scope_stack[0];
+    }
+
+    return state->scope_stack[state->scope_depth - 1];
+}
+
+/*
+ * Pop a scope from the scope stack
+ *
+ * @state: Compiler state
+ */
+static tt_t
+scope_pop(struct gup_state *state)
+{
+    tt_t scope;
+
+    if (state->scope_depth == 0) {
+        return state->scope_stack[0];
+    }
+
+    scope = state->scope_stack[--state->scope_depth];
+    state->scope_stack[state->scope_depth] = TT_NONE;
+    return scope;
+}
+
+/*
  * Parse a data type
  *
  * @state: Compiler state
@@ -177,6 +240,54 @@ parse_asm(struct gup_state *state, struct token *tok)
 }
 
 /*
+ * Handle for when we encounter a right brace ('}')
+ *
+ * @state: Compiler state
+ * @tok:   Last token
+ *
+ * Returns zero on success
+ */
+static int
+parse_rbrace(struct gup_state *state, struct token *tok)
+{
+    if (state == NULL || tok == NULL) {
+        errno = -EINVAL;
+        return -1;
+    }
+
+    if (scope_pop(state) == TT_NONE) {
+        trace_error(state, "unexpected RBRACE, no previous scope\n");
+        return -1;
+    }
+
+    return 0;
+}
+
+/*
+ * Handle for when we encounter a left brace ('{')
+ *
+ * @state: Compiler state
+ * @block: Parent block token
+ * @tok:   Last token
+ *
+ * Returns zero on success
+ */
+static int
+parse_lbrace(struct gup_state *state, tt_t block, struct token *tok)
+{
+    if (state == NULL || tok == NULL) {
+        errno = -EINVAL;
+        return -1;
+    }
+
+    if (scope_push(state, block) < 0) {
+        return -1;
+    }
+
+    return 0;
+}
+
+/*
  * Parse a procedure
  *
  * @state: Compiler state
@@ -215,9 +326,25 @@ parse_proc(struct gup_state *state, struct token *tok)
         return -1;
     }
 
-    if (parse_expect(state, tok, TT_SEMI) < 0) {
+    if (lexer_scan(state, tok) < 0) {
+        ueof(state);
         return -1;
     }
+
+    switch (tok->type) {
+    case TT_SEMI:
+        return 0;
+    case TT_LBRACE:
+        if (parse_lbrace(state, TT_PROC, tok) < 0) {
+            return -1;
+        }
+
+        return 0;
+    default:
+        utok(state, tok->type);
+        return -1;
+    }
+
     return 0;
 }
 
@@ -248,6 +375,12 @@ begin_parse(struct gup_state *state, struct token *tok)
         }
 
         break;
+    case TT_RBRACE:
+        if (parse_rbrace(state, tok) < 0) {
+            return -1;
+        }
+
+        break;
     default:
         utok(state, tok->type);
         return -1;
@@ -269,6 +402,12 @@ gup_parse(struct gup_state *state)
         if (begin_parse(state, &last_token) < 0) {
             break;
         }
+    }
+
+    if (scope_top(state) != TT_NONE) {
+        ueof(state);
+        trace_warn("missing RBRACE ('}') ?\n");
+        return -1;
     }
 
     return 0;
