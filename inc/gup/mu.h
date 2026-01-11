@@ -6,6 +6,7 @@
 #ifndef GUP_MU_H
 #define GUP_MU_H 1
 
+#include <stdbool.h>
 #include "gup/state.h"
 
 /*
@@ -17,5 +18,16 @@
  * Returns zero on success
  */
 int mu_cg_inject(struct gup_state *state, const char *str);
+
+/*
+ * Create an assembly label
+ *
+ * @state: Compiler state
+ * @s: Name of label to create
+ * @is_global: If true, label becomes global
+ *
+ * Returns zero on success
+ */
+int mu_cg_label(struct gup_state *state, const char *s, bool is_global);
 
 #endif  /* !GUP_MU_H */

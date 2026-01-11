@@ -21,3 +21,28 @@ mu_cg_inject(struct gup_state *state, const char *str)
     );
     return 0;
 }
+
+int
+mu_cg_label(struct gup_state *state, const char *s, bool is_global)
+{
+    if (state == NULL || s == NULL) {
+        errno = -EINVAL;
+        return -1;
+    }
+
+    if (is_global) {
+        fprintf(
+            state->out_fp,
+            "[global %s]\n",
+            s
+        );
+    }
+
+    fprintf(
+        state->out_fp,
+        "%s:\n",
+        s
+    );
+
+    return 0;
+}
