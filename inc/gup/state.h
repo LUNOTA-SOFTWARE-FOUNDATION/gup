@@ -6,13 +6,17 @@
 #ifndef GUP_STATE_H
 #define GUP_STATE_H
 
+#include "gup/ptrbox.h"
+
 /*
  * Represents the compiler state
  *
  * @in_fd: Source input file descriptor
+ * @ptrbox: Global pointer box
  */
 struct gup_state {
     int in_fd;
+    struct ptrbox ptrbox;
 };
 
 /*

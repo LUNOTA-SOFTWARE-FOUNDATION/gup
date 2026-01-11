@@ -8,6 +8,7 @@
 #include <string.h>
 #include <fcntl.h>
 #include "gup/state.h"
+#include "gup/ptrbox.h"
 
 int
 gup_state_init(const char *path, struct gup_state *state)
@@ -23,6 +24,11 @@ gup_state_init(const char *path, struct gup_state *state)
         return -1;
     }
 
+    if (ptrbox_init(&state->ptrbox) < 0) {
+        close(state->in_fd);
+        return -1;
+    }
+
     return 0;
 }
 
@@ -34,4 +40,5 @@ gup_state_destroy(struct gup_state *state)
     }
 
     close(state->in_fd);
+    ptrbox_destroy(&state->ptrbox);
 }
