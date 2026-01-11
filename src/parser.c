@@ -217,14 +217,30 @@ parse_asm(struct gup_state *state, struct token *tok)
 static int
 parse_rbrace(struct gup_state *state, struct token *tok)
 {
+    struct ast_node *root;
+    tt_t scope;
+
     if (state == NULL || tok == NULL) {
         errno = -EINVAL;
         return -1;
     }
 
-    if (scope_pop(state) == TT_NONE) {
+    if ((scope = scope_pop(state)) == TT_NONE) {
         trace_error(state, "unexpected RBRACE, no previous scope\n");
         return -1;
+    }
+
+    switch (scope) {
+    case TT_PROC:
+        if (ast_alloc_node(state, AST_PROC, &root) < 0) {
+            trace_error(state, "could not allocate AST_PROC epilogue\n");
+            return -1;
+        }
+
+        root->epilogue = 1;
+        return cg_compile_node(state, root);
+    default:
+        break;
     }
 
     return 0;

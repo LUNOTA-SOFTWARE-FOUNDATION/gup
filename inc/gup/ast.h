@@ -32,12 +32,14 @@ typedef enum {
  * @left: Left node
  * @right: Right node
  * @symbol: Symbol associated with node
+ * @epilogue: If set, indicates end of block
  */
 struct ast_node {
     ast_op_t type;
     struct ast_node *left;
     struct ast_node *right;
     struct symbol *symbol;
+    uint8_t epilogue : 1;
     union {
         char *s;
     };
