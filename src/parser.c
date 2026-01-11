@@ -12,6 +12,13 @@
 #include "gup/trace.h"
 #include "gup/ast.h"
 #include "gup/codegen.h"
+#include "gup/types.h"
+
+#define ueof(state)                 \
+    trace_error(                    \
+        state,                      \
+        "unexpected end of file\n"  \
+    );
 
 /* Most previous input token */
 static struct token last_token;
@@ -43,6 +50,93 @@ static const char *toktab[] = {
 };
 
 /*
+ * Get a data type from a lexical token type
+ *
+ * @tt: Token type to test
+ *
+ * Returns GUP_TYPE_BAD on failure, otherwise the
+ * specific data type.
+ */
+static gup_type_t
+parse_get_type(tt_t tt)
+{
+    switch (tt) {
+    case TT_U8:  return GUP_TYPE_U8;
+    case TT_U16: return GUP_TYPE_U16;
+    case TT_U32: return GUP_TYPE_U32;
+    case TT_U64: return GUP_TYPE_U64;
+    default:     return GUP_TYPE_BAD;
+    }
+
+    return GUP_TYPE_BAD;
+}
+
+/*
+ * Parse a data type
+ *
+ * @state: Compiler state
+ * @tok:   Last token
+ * @res:   Type result written here
+ *
+ * Returns zero on success
+ */
+static int
+parse_type(struct gup_state *state, struct token *tok, struct datum_type *res)
+{
+    gup_type_t type;
+
+    type = parse_get_type(tok->type);
+    if (type == GUP_TYPE_BAD) {
+        trace_error(
+            state,
+            "got bad token %s, expected type\n",
+            toktab[tok->type]
+        );
+        return -1;
+    }
+
+    res->type = type;
+    return 0;
+}
+
+/*
+ * Asserts that the next token is of an expected value
+ *
+ * @state: Compiler state
+ * @tok    Last token
+ * @what:  Expected token
+ *
+ * Returns zero on success
+ */
+static int
+parse_expect(struct gup_state *state, struct token *tok, tt_t what)
+{
+    if (state == NULL || tok == NULL) {
+        errno = -EINVAL;
+        return -1;
+    }
+
+    if (lexer_scan(state, tok) < 0) {
+        ueof(state);
+        return -1;
+    }
+
+    /* This must match */
+    if (tok->type != what) {
+        trace_error(
+            state,
+            "expected %s, got %s\n",
+            toktab[what],
+            toktab[tok->type]
+        );
+
+        return -1;
+    }
+
+    return 0;
+}
+
+/*
  * Handle lines of assembly
  *
  * @state: Compiler state
@@ -70,6 +164,51 @@ parse_asm(struct gup_state *state, struct token *tok)
 }
 
 /*
+ * Parse a procedure
+ *
+ * @state: Compiler state
+ * @tok:   Last token
+ *
+ * Returns zero on success
+ */
+static int
+parse_proc(struct gup_state *state, struct token *tok)
+{
+    struct datum_type type;
+
+    if (state == NULL || tok == NULL) {
+        errno = -EINVAL;
+        return -1;
+    }
+
+    if (parse_expect(state, tok, TT_IDENT) < 0) {
+        return -1;
+    }
+
+    if (parse_expect(state, tok, TT_MINUS) < 0) {
+        return -1;
+    }
+
+    if (parse_expect(state, tok, TT_GT) < 0) {
+        return -1;
+    }
+
+    if (lexer_scan(state, tok) < 0) {
+        ueof(state);
+        return -1;
+    }
+
+    if (parse_type(state, tok, &type) < 0) {
+        return -1;
+    }
+
+    if (parse_expect(state, tok, TT_SEMI) < 0) {
+        return -1;
+    }
+    return 0;
+}
+
+/*
  * Begin parsing tokens from the input source
  *
  * @state: Compiler state
@@ -86,6 +225,12 @@ begin_parse(struct gup_state *state, struct token *tok)
     switch (tok->type) {
     case TT_ASM:
         if (parse_asm(state, tok) < 0) {
+            return -1;
+        }
+
+        break;
+    case TT_PROC:
+        if (parse_proc(state, tok) < 0) {
             return -1;
         }
 
