@@ -36,6 +36,7 @@ typedef enum {
  * @symtab: Global symbol table
  * @scope_stack: Keeps track of scopes
  * @scope_depth: Current scope depth
+ * @loop_count: Number of loops in program
  * @cur_section: Current section
  * @out_fp: Output file
  */
@@ -47,6 +48,7 @@ struct gup_state {
     struct symbol_table symtab;
     tt_t scope_stack[MAX_SCOPE_DEPTH];
     size_t scope_depth;
+    size_t loop_count;
     bin_section_t cur_section;
     FILE *out_fp;
 };

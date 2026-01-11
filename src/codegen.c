@@ -3,6 +3,7 @@
  * Provided under the BSD-3 clause.
  */
 
+#include <stdio.h>
 #include <errno.h>
 #include "gup/trace.h"
 #include "gup/codegen.h"
@@ -62,6 +63,50 @@ cg_emit_proc(struct gup_state *state, struct ast_node *node)
     return 0;
 }
 
+/*
+ * Emit a loop
+ *
+ * @state: Compiler state
+ * @node:  Loop node
+ *
+ * Returns zero on success
+ */
+static int
+cg_emit_loop(struct gup_state *state, struct ast_node *node)
+{
+    char label_buf[32];
+
+    if (state == NULL || node == NULL) {
+        errno = -EINVAL;
+        return -1;
+    }
+
+    /*
+     * If this is not a loop epilogue, generate the
+     * loop start label and that's it.
+     */
+    if (!node->epilogue) {
+        snprintf(
+            label_buf,
+            sizeof(label_buf),
+            "L.%zu",
+            state->loop_count++
+        );
+
+        mu_cg_label(state, label_buf, false);
+        return 0;
+    }
+
+    /* Emit a jump to the start label */
+    snprintf(label_buf, sizeof(label_buf), "L.%zu", state->loop_count - 1);
+    mu_cg_jmp(state, label_buf);
+
+    /* Emit the end label */
+    snprintf(label_buf, sizeof(label_buf), "L.%zu.1", state->loop_count - 1);
+    mu_cg_label(state, label_buf, false);
+    return 0;
+}
+
 int
 cg_compile_node(struct gup_state *state, struct ast_node *node)
 {
@@ -79,6 +124,12 @@ cg_compile_node(struct gup_state *state, struct ast_node *node)
         break;
     case AST_PROC:
         if (cg_emit_proc(state, node) < 0) {
+            return -1;
+        }
+
+        break;
+    case AST_LOOP:
+        if (cg_emit_loop(state, node) < 0) {
             return -1;
         }
 

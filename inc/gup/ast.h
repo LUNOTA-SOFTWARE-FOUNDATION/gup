@@ -17,11 +17,13 @@
  * @AST_NONE: No type specified
  * @AST_ASM:  Inline-assembly
  * @AST_PROC: Procedure
+ * @AST_LOOP: Loop block
  */
 typedef enum {
     AST_NONE,
     AST_ASM,
     AST_PROC,
+    AST_LOOP
 } ast_op_t;
 
 /*

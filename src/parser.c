@@ -240,6 +240,14 @@ parse_rbrace(struct gup_state *state, struct token *tok)
 
         root->epilogue = 1;
         return cg_compile_node(state, root);
+    case TT_LOOP:
+        if (ast_alloc_node(state, AST_LOOP, &root) < 0) {
+            trace_error(state, "could not allocate AST_LOOP epilogue\n");
+            return -1;
+        }
+
+        root->epilogue = 1;
+        return cg_compile_node(state, root);
     default:
         break;
     }
@@ -373,6 +381,32 @@ parse_proc(struct gup_state *state, struct token *tok)
     return -1;
 }
 
+static int
+parse_loop(struct gup_state *state, struct token *tok)
+{
+    struct ast_node *root;
+
+    if (state == NULL || tok == NULL) {
+        errno = -EINVAL;
+        return -1;
+    }
+
+    if (parse_expect(state, tok, TT_LBRACE) < 0) {
+        return -1;
+    }
+
+    if (scope_push(state, TT_LOOP) < 0) {
+        return -1;
+    }
+
+    if (ast_alloc_node(state, AST_LOOP, &root) < 0) {
+        trace_error(state, "failed to allocate AST_LOOP\n");
+        return -1;
+    }
+
+    return cg_compile_node(state, root);
+}
+
 /*
  * Begin parsing tokens from the input source
  *
@@ -402,6 +436,12 @@ begin_parse(struct gup_state *state, struct token *tok)
         break;
     case TT_RBRACE:
         if (parse_rbrace(state, tok) < 0) {
+            return -1;
+        }
+
+        break;
+    case TT_LOOP:
+        if (parse_loop(state, tok) < 0) {
             return -1;
         }
 
