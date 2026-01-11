@@ -350,6 +350,13 @@ lexer_is_kw(struct gup_state *state, struct token *tok)
         }
 
         break;
+    case 'b':
+        if (strcmp(tok->s, "break") == 0) {
+            tok->type = TT_BREAK;
+            return 0;
+        }
+
+        break;
     }
 
     return -1;
