@@ -12,10 +12,12 @@
  * Represents the compiler state
  *
  * @in_fd: Source input file descriptor
+ * @line_no: Line number
  * @ptrbox: Global pointer box
  */
 struct gup_state {
     int in_fd;
+    size_t line_num;
     struct ptrbox ptrbox;
 };
 

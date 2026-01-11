@@ -29,6 +29,7 @@ gup_state_init(const char *path, struct gup_state *state)
         return -1;
     }
 
+    state->line_num = 1;
     return 0;
 }
 

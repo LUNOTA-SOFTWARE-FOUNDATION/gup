@@ -26,6 +26,7 @@ lexer_is_ws(struct gup_state *state, char c)
 
     switch (c) {
     case '\n':
+        ++state->line_num;
     case '\r':
     case '\f':
     case '\t':
