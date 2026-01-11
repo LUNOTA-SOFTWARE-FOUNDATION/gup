@@ -324,6 +324,18 @@ lexer_is_kw(struct gup_state *state, struct token *tok)
         }
 
         break;
+    case 'p':
+        if (strcmp(tok->s, "proc") == 0) {
+            tok->type = TT_PROC;
+            return 0;
+        }
+
+        if (strcmp(tok->s, "pub") == 0) {
+            tok->type = TT_PUB;
+            return 0;
+        }
+
+        break;
     }
 
     return -1;
@@ -369,6 +381,14 @@ lexer_scan(struct gup_state *state, struct token *res)
         return 0;
     case '/':
         res->type = TT_SLASH;
+        res->c = c;
+        return 0;
+    case '(':
+        res->type = TT_LPAREN;
+        res->c = c;
+        return 0;
+    case ')':
+        res->type = TT_RPAREN;
         res->c = c;
         return 0;
     default:

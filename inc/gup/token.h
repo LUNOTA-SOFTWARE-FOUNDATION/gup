@@ -19,10 +19,14 @@ typedef enum {
     TT_PLUS,        /* '+' */
     TT_MINUS,       /* '-' */
     TT_SLASH,       /* '/' */
+    TT_LPAREN,      /* '(' */
+    TT_RPAREN,      /* ')' */
     TT_U8,          /* 'u8' */
     TT_U16,         /* 'u16' */
     TT_U32,         /* 'u32' */
     TT_U64,         /* 'u64' */
+    TT_PUB,         /* 'pub' */
+    TT_PROC,        /* 'proc' */
     TT_NUMBER,      /* <NUMBER> */
     TT_IDENT,       /* <IDENTIFIER> */
 } tt_t;
