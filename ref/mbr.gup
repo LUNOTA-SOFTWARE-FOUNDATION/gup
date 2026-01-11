@@ -1,0 +1,31 @@
+@ [bits 16]    ;
+@ [org 0x7C00] ;
+
+proc halt -> void;
+
+pub proc _start -> void
+{
+    @ xor ax, ax    ;
+    @ mov es, ax    ;
+    @ mov ss, ax    ;
+    @ mov ds, ax    ;
+    @ mov fs, ax    ;
+    @ mov gs, ax    ;
+    @ jmp 0x00:main ;
+}
+
+proc main -> void
+{
+    halt();
+}
+
+proc halt -> void
+{
+    loop {
+        @ cli ;
+        @ hlt ;
+    }
+}
+
+@ times 510 - ($ - $$) db 0 ;
+@ dw 0xAA55 ;

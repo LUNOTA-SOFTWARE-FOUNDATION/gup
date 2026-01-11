@@ -1,0 +1,9 @@
+proc nop -> void {
+    @ nop ;
+}
+
+pub proc main -> u32
+{
+    nop();
+    return 0;
+}
