@@ -180,6 +180,35 @@ cg_emit_break(struct gup_state *state, struct ast_node *node)
     return mu_cg_jmp(state, label_buf);
 }
 
+/*
+ * Emit a procedure call
+ *
+ * @state: Compiler state
+ * @node:  Node of procedure call
+ */
+static int
+cg_emit_call(struct gup_state *state, struct ast_node *node)
+{
+    struct symbol *symbol;
+
+    if (state == NULL || node == NULL) {
+        errno = -EINVAL;
+        return -1;
+    }
+
+    if (node->type != AST_CALL) {
+        errno = -EINVAL;
+        return -1;
+    }
+
+    if ((symbol = node->symbol) == NULL) {
+        errno = -EIO;
+        return -1;
+    }
+
+    return mu_cg_call(state, symbol->name);
+}
+
 int
 cg_compile_node(struct gup_state *state, struct ast_node *node)
 {
@@ -219,7 +248,12 @@ cg_compile_node(struct gup_state *state, struct ast_node *node)
         }
 
         break;
+    case AST_CALL:
+        if (cg_emit_call(state, node) < 0) {
+            return -1;
+        }
 
+        break;
     default:
         trace_error(state, "bad AST node [type=%d]\n", node->type);
         return -1;

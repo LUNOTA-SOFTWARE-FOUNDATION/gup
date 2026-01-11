@@ -20,6 +20,7 @@
  * @AST_LOOP: Loop block
  * @AST_GLOBVAR: Global variable
  * @AST_BREAK:   Break statement
+ * @AST_CALL:    Procedure call
  */
 typedef enum {
     AST_NONE,
@@ -28,6 +29,7 @@ typedef enum {
     AST_LOOP,
     AST_GLOBVAR,
     AST_BREAK,
+    AST_CALL
 } ast_op_t;
 
 /*

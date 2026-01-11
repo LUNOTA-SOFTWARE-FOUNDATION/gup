@@ -530,6 +530,98 @@ parse_break(struct gup_state *state, struct token *tok)
 }
 
 /*
+ * Parse a function call
+ *
+ * @state: Compiler state
+ * @ident: Identifier
+ * @tok:   Last token
+ *
+ * Returns zero on success
+ */
+static int
+parse_call(struct gup_state *state, const char *ident, struct token *tok)
+{
+    struct symbol *symbol;
+    struct ast_node *root;
+
+    if (state == NULL || tok == NULL) {
+        errno = -EINVAL;
+        return -1;
+    }
+
+    if (tok->type != TT_LPAREN) {
+        utok1(state, "LPAREN", tokstr1(tok));
+        return -1;
+    }
+
+    /* TODO: Handle arguments */
+    if (parse_expect(state, tok, TT_RPAREN) < 0) {
+        return -1;
+    }
+
+    symbol = symbol_from_name(&state->symtab, ident);
+    if (symbol == NULL) {
+        trace_error(state, "undefined reference to function %s\n", ident);
+        return -1;
+    }
+
+    if (ast_alloc_node(state, AST_CALL, &root) < 0) {
+        trace_error(state, "failed to allocate AST_CALL\n");
+        return -1;
+    }
+
+    if (parse_expect(state, tok, TT_SEMI) < 0) {
+        return -1;
+    }
+
+    root->symbol = symbol;
+    return cg_compile_node(state, root);
+}
+
+/*
+ * Parse an identifier token
+ *
+ * @state: Compiler state
+ * @tok:   Last token
+ *
+ * Returns zero on success
+ */
+static int
+parse_ident(struct gup_state *state, struct token *tok)
+{
+    char *ident;
+
+    if (state == NULL || tok == NULL) {
+        errno = -EINVAL;
+        return -1;
+    }
+
+    ident = ptrbox_strdup(&state->ptrbox, tok->s);
+    if (ident == NULL) {
+        trace_error(state, "out of memory\n");
+        return -1;
+    }
+
+    if (lexer_scan(state, tok) < 0) {
+        ueof(state);
+        return -1;
+    }
+
+    switch (tok->type) {
+    case TT_LPAREN:
+        if (parse_call(state, ident, tok) < 0) {
+            return -1;
+        }
+
+        break;
+    default:
+        return -1;
+    }
+
+    return 0;
+}
+
+/*
  * Begin parsing tokens from the input source
  *
  * @state: Compiler state
@@ -570,6 +662,12 @@ begin_parse(struct gup_state *state, struct token *tok)
         break;
     case TT_BREAK:
         if (parse_break(state, tok) < 0) {
+            return -1;
+        }
+
+        break;
+    case TT_IDENT:
+        if (parse_ident(state, tok) < 0) {
             return -1;
         }
 
