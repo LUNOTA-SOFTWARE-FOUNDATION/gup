@@ -202,6 +202,7 @@ lexer_scan_num(struct gup_state *state, int lc, struct token *res)
 
         if (!isdigit(c)) {
             buf[buf_i] = '\0';
+            lexer_putback(state, c);
             break;
         }
 
