@@ -29,8 +29,14 @@ gup_state_init(const char *path, struct gup_state *state)
         return -1;
     }
 
+    if (symbol_table_init(&state->symtab) < 0) {
+        close(state->in_fd);
+        return -1;
+    }
+
     state->out_fp = fopen(DEFAULT_ASMOUT, "w");
     if (state->out_fp == NULL) {
+        symbol_table_destroy(&state->symtab);
         close(state->in_fd);
         return -1;
     }
@@ -49,4 +55,5 @@ gup_state_destroy(struct gup_state *state)
     close(state->in_fd);
     fclose(state->out_fp);
     ptrbox_destroy(&state->ptrbox);
+    symbol_table_destroy(&state->symtab);
 }

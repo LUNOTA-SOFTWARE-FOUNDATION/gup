@@ -9,6 +9,7 @@
 #include <stdio.h>
 #include "gup/ptrbox.h"
 #include "gup/token.h"
+#include "gup/symbol.h"
 
 #define DEFAULT_ASMOUT "gupgen.asm"
 #define MAX_SCOPE_DEPTH 8
@@ -20,6 +21,7 @@
  * @line_no: Line number
  * @putback: Putback buffer
  * @ptrbox: Global pointer box
+ * @symtab: Global symbol table
  * @scope_stack: Keeps track of scopes
  * @scope_depth: Current scope depth
  * @out_fp: Output file
@@ -29,6 +31,7 @@ struct gup_state {
     size_t line_num;
     char putback;
     struct ptrbox ptrbox;
+    struct symbol_table symtab;
     tt_t scope_stack[MAX_SCOPE_DEPTH];
     size_t scope_depth;
     FILE *out_fp;
