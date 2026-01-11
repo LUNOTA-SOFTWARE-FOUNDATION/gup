@@ -33,6 +33,8 @@ cg_emit_asm(struct gup_state *state, struct ast_node *node)
 static int
 cg_emit_proc(struct gup_state *state, struct ast_node *node)
 {
+    struct symbol *symbol;
+
     if (state == NULL || node == NULL) {
         errno = -EINVAL;
         return -1;
@@ -43,8 +45,13 @@ cg_emit_proc(struct gup_state *state, struct ast_node *node)
         return -1;
     }
 
+    if ((symbol = node->symbol) == NULL) {
+        errno = -EIO;
+        return -1;
+    }
+
     if (node->s != NULL) {
-        mu_cg_label(state, node->s, true);
+        mu_cg_label(state, node->s, symbol->global);
     }
     return 0;
 }

@@ -302,6 +302,8 @@ parse_proc(struct gup_state *state, struct token *tok)
 {
     struct ast_node *root;
     struct datum_type type;
+    struct symbol *symbol;
+    int error;
 
     if (state == NULL || tok == NULL) {
         errno = -EINVAL;
@@ -339,6 +341,22 @@ parse_proc(struct gup_state *state, struct token *tok)
         return -1;
     }
 
+    error = symbol_new(
+        &state->symtab,
+        root->s,
+        type.type,
+        &symbol
+    );
+
+    if (error < 0) {
+        trace_error(state, "failed to create new symbol\n");
+        return -1;
+    }
+
+    /* Set the new symbol */
+    root->symbol = symbol;
+
+    /* We expect a ';' or a '{' */
     if (lexer_scan(state, tok) < 0) {
         ueof(state);
         return -1;
