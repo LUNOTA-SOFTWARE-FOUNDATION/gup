@@ -249,7 +249,7 @@ lexer_scan_ident(struct gup_state *state, int lc, struct token *res)
 
     buf[buf_size++] = lc;
     for (;;) {
-        if ((c = lexer_nom(state, false)) == '\0') {
+        if ((c = lexer_nom(state, true)) == '\0') {
             buf[buf_size] = '\0';
             break;
         }
