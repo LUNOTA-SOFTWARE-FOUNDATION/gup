@@ -9,6 +9,7 @@
 #include "gup/parser.h"
 #include "gup/token.h"
 #include "gup/lexer.h"
+#include "gup/trace.h"
 
 /* Most previous input token */
 static struct token last_token;
@@ -42,7 +43,7 @@ gup_parse(struct gup_state *state)
     }
 
     while (lexer_scan(state, &last_token) == 0) {
-        printf("got token %s\n", toktab[last_token.type]);
+        trace_debug("got token %s\n", toktab[last_token.type]);
     }
 
     return 0;
