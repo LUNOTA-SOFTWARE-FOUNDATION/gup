@@ -336,6 +336,13 @@ lexer_is_kw(struct gup_state *state, struct token *tok)
         }
 
         break;
+    case 'v':
+        if (strcmp(tok->s, "void") == 0) {
+            tok->type = TT_VOID;
+            return 0;
+        }
+
+        break;
     }
 
     return -1;

@@ -66,6 +66,7 @@ static const char *toktab[] = {
     [TT_U16]    = "U16",
     [TT_U32]    = "U32",
     [TT_U64]    = "U64",
+    [TT_VOID]   = "VOID",
     [TT_PUB]    = "PUB",
     [TT_PROC]   = "PROC",
     [TT_NUMBER] = "NUMBER",
@@ -84,11 +85,12 @@ static gup_type_t
 parse_get_type(tt_t tt)
 {
     switch (tt) {
-    case TT_U8:  return GUP_TYPE_U8;
-    case TT_U16: return GUP_TYPE_U16;
-    case TT_U32: return GUP_TYPE_U32;
-    case TT_U64: return GUP_TYPE_U64;
-    default:     return GUP_TYPE_BAD;
+    case TT_VOID: return GUP_TYPE_VOID;
+    case TT_U8:   return GUP_TYPE_U8;
+    case TT_U16:  return GUP_TYPE_U16;
+    case TT_U32:  return GUP_TYPE_U32;
+    case TT_U64:  return GUP_TYPE_U64;
+    default:      return GUP_TYPE_BAD;
     }
 
     return GUP_TYPE_BAD;
