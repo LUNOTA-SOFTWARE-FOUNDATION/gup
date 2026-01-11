@@ -206,6 +206,11 @@ cg_emit_call(struct gup_state *state, struct ast_node *node)
         return -1;
     }
 
+    if (symbol->type != SYMBOL_FUNC) {
+        trace_error(state, "'%s' is not a function\n", symbol->name);
+        return -1;
+    }
+
     return mu_cg_call(state, symbol->name);
 }
 

@@ -15,10 +15,20 @@
 typedef size_t sym_id_t;
 
 /*
+ * Represents valid symbol types
+ */
+typedef enum {
+    SYMBOL_NONE,
+    SYMBOL_FUNC,
+    SYMBOL_VAR
+} sym_type_t;
+
+/*
  * Represents a program symbol
  *
  * @name: Symbol name
  * @id: Symbol ID
+ * @type: Symbol type
  * @global: If set, symbol is global
  * @data_type: Symbol data type
  * @link: Queue link
@@ -26,6 +36,7 @@ typedef size_t sym_id_t;
 struct symbol {
     char *name;
     sym_id_t id;
+    sym_type_t type;
     uint8_t global : 1;
     struct datum_type data_type;
     TAILQ_ENTRY(symbol) link;

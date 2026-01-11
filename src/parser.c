@@ -383,6 +383,7 @@ parse_proc(struct gup_state *state, struct token *tok)
 
     /* Set the new symbol */
     symbol->global = is_global;
+    symbol->type = SYMBOL_FUNC;
     root->symbol = symbol;
 
     /* We expect a ';' or a '{' */
@@ -488,7 +489,9 @@ parse_var(struct gup_state *state, struct token *tok)
         return -1;
     }
 
+    symbol->type = SYMBOL_VAR;
     root->symbol = symbol;
+
     if (parse_expect(state, tok, TT_SEMI) < 0) {
         return -1;
     }
