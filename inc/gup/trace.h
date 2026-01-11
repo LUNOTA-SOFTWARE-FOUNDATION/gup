@@ -15,7 +15,7 @@
 #define trace_warn(fmt, ...)   \
     printf("[warn]: " fmt, ##__VA_ARGS__)
 
-#define DEBUG 1
+#define DEBUG 0
 #if DEBUG
 #define trace_debug(fmt, ...)   \
     printf("[debug]: " fmt, ##__VA_ARGS__)
