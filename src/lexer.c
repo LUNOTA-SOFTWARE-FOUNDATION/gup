@@ -218,6 +218,66 @@ lexer_scan_num(struct gup_state *state, int lc, struct token *res)
     return 0;
 }
 
+/*
+ * Scan an identifier from the source input
+ *
+ * @state: Compiler state
+ * @lc: Last character
+ * @res: Token result is written here
+ *
+ * Returns zero on success
+ */
+static int
+lexer_scan_ident(struct gup_state *state, int lc, struct token *res)
+{
+    char *buf;
+    size_t buf_cap;
+    size_t buf_size;
+    char c;
+
+    if (state == NULL || res == NULL) {
+        errno = -EINVAL;
+        return -1;
+    }
+
+    buf_cap = 8;
+    buf_size = 0;
+    if ((buf = malloc(buf_cap)) == NULL) {
+        errno = -ENOMEM;
+        return -1;
+    }
+
+    buf[buf_size++] = lc;
+    for (;;) {
+        if ((c = lexer_nom(state, false)) == '\0') {
+            buf[buf_size] = '\0';
+            break;
+        }
+
+        if (!isalnum(c) && c != '_') {
+            lexer_putback(state, c);
+            buf[buf_size] = '\0';
+            break;
+        }
+
+        buf[buf_size++] = c;
+        if (buf_size >= buf_cap - 1) {
+            buf_cap += 8;
+            buf = realloc(buf, buf_cap);
+        }
+
+        if (buf == NULL) {
+            errno = -ENOMEM;
+            return -1;
+        }
+    }
+
+    res->type = TT_IDENT;
+    res->s = ptrbox_strdup(&state->ptrbox, buf);
+    free(buf);
+    return 0;
+}
+
 int
 lexer_scan(struct gup_state *state, struct token *res)
 {
@@ -269,6 +329,9 @@ lexer_scan(struct gup_state *state, struct token *res)
             return 0;
         }
 
+        if (lexer_scan_ident(state, c, res) == 0) {
+            return 0;
+        }
     }
 
     return -1;

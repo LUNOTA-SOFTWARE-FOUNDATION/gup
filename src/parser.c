@@ -25,7 +25,8 @@ static const char *toktab[] = {
     [TT_PLUS]   = "PLUS",
     [TT_MINUS]  = "MINUS",
     [TT_SLASH]  = "SLASH",
-    [TT_NUMBER] = "NUMBER"
+    [TT_NUMBER] = "NUMBER",
+    [TT_IDENT]  = "IDENTIFIER"
 };
 
 int

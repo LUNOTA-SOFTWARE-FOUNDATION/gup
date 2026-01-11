@@ -20,6 +20,7 @@ typedef enum {
     TT_MINUS,       /* '-' */
     TT_SLASH,       /* '/' */
     TT_NUMBER,      /* <NUMBER> */
+    TT_IDENT,       /* <IDENTIFIER> */
 } tt_t;
 
 /*
