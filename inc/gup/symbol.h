@@ -62,6 +62,16 @@ int symbol_table_init(struct symbol_table *symtab);
 struct symbol *symbol_from_id(struct symbol_table *symtab, sym_id_t id);
 
 /*
+ * Obtain a symbol using its name
+ *
+ * @symtab: Symbol table to look up from
+ * @name:   Name to look up
+ *
+ * Returns NULL on failure
+ */
+struct symbol *symbol_from_name(struct symbol_table *symtab, const char *name);
+
+/*
  * Allocate a new symbol
  *
  * @symtab: Symbol table to add symbol to

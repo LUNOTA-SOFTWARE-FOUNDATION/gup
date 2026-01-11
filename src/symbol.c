@@ -74,6 +74,28 @@ symbol_from_id(struct symbol_table *symtab, sym_id_t id)
     return NULL;
 }
 
+struct symbol *
+symbol_from_name(struct symbol_table *symtab, const char *name)
+{
+    struct symbol *symbol;
+
+    if (symtab == NULL || name == NULL) {
+        return NULL;
+    }
+
+    TAILQ_FOREACH(symbol, &symtab->symbols, link) {
+        if (*symbol->name != *name) {
+            continue;
+        }
+
+        if (strcmp(symbol->name, name) == 0) {
+            return symbol;
+        }
+    }
+
+    return NULL;
+}
+
 void
 symbol_table_destroy(struct symbol_table *symtab)
 {
