@@ -399,6 +399,14 @@ lexer_scan(struct gup_state *state, struct token *res)
         res->type = TT_GT;
         res->c = c;
         return 0;
+    case '{':
+        res->type = TT_LBRACE;
+        res->c = c;
+        return 0;
+    case '}':
+        res->type = TT_RBRACE;
+        res->c = c;
+        return 0;
     default:
         /* Is this a digit? */
         if (isdigit(c)) {

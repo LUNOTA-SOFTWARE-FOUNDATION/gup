@@ -21,6 +21,8 @@ typedef enum {
     TT_SLASH,       /* '/' */
     TT_LPAREN,      /* '(' */
     TT_RPAREN,      /* ')' */
+    TT_LBRACE,      /* '{' */
+    TT_RBRACE,      /* '}' */
     TT_LT,          /* '<' */
     TT_GT,          /* '>' */
     TT_U8,          /* 'u8' */
