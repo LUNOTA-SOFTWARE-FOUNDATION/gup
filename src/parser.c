@@ -34,6 +34,55 @@ static const char *toktab[] = {
     [TT_IDENT]  = "IDENTIFIER"
 };
 
+/*
+ * Handle lines of assembly
+ *
+ * @state: Compiler state
+ * @tok: Last token
+ *
+ * Returns zero on success
+ */
+static int
+parse_asm(struct gup_state *state, struct token *tok)
+{
+    if (state == NULL || tok == NULL) {
+        errno = -EINVAL;
+        return -1;
+    }
+
+    printf("got asm: %s\n", tok->s);
+    return 0;
+}
+
+/*
+ * Begin parsing tokens from the input source
+ *
+ * @state: Compiler state
+ * @tok: Last token
+ */
+static int
+begin_parse(struct gup_state *state, struct token *tok)
+{
+    if (state == NULL || tok == NULL) {
+        errno = -EINVAL;
+        return -1;
+    }
+
+    switch (tok->type) {
+    case TT_ASM:
+        if (parse_asm(state, tok) < 0) {
+            return -1;
+        }
+
+        break;
+    default:
+        trace_error(state, "got unexpected token %s\n", toktab[tok->type]);
+        return -1;
+    }
+
+    return 0;
+}
+
 int
 gup_parse(struct gup_state *state)
 {
@@ -44,6 +93,9 @@ gup_parse(struct gup_state *state)
 
     while (lexer_scan(state, &last_token) == 0) {
         trace_debug("got token %s\n", toktab[last_token.type]);
+        if (begin_parse(state, &last_token) < 0) {
+            break;
+        }
     }
 
     return 0;
