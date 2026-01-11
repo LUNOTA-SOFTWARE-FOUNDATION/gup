@@ -121,6 +121,16 @@ lexer_scan_asm(struct gup_state *state, struct token *res)
         return -1;
     }
 
+    /*
+     * This serves to ensure the assembly output stays
+     * pretty without any weird whitespaces. If the
+     * programmer skipped a whitespace after the '@',
+     * put whatever we grabbed back.
+     */
+    if ((c = lexer_nom(state, true)) != ' ') {
+        lexer_putback(state, c);
+    }
+
     for (;;) {
         if ((c = lexer_nom(state, true)) == '\0') {
             trace_error(state, "unexpected end of file\n");
