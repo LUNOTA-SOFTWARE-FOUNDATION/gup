@@ -6,6 +6,7 @@
 #include <stdint.h>
 #include <errno.h>
 #include <ctype.h>
+#include <string.h>
 #include <unistd.h>
 #include <stddef.h>
 #include <stdlib.h>
@@ -278,6 +279,56 @@ lexer_scan_ident(struct gup_state *state, int lc, struct token *res)
     return 0;
 }
 
+/*
+ * Check if what was scanned as an identifier is actually
+ * a keyword.
+ *
+ * @state: Compiler state
+ * @tok: Token to check
+ *
+ * Returns zero on success
+ */
+static int
+lexer_is_kw(struct gup_state *state, struct token *tok)
+{
+    if (state == NULL || tok == NULL) {
+        errno = -EINVAL;
+        return -1;
+    }
+
+    if (tok->type != TT_IDENT) {
+        errno = -EINVAL;
+        return -1;
+    }
+
+    switch (*tok->s) {
+    case 'u':
+        if (strcmp(tok->s, "u8") == 0) {
+            tok->type = TT_U8;
+            return 0;
+        }
+
+        if (strcmp(tok->s, "u16") == 0) {
+            tok->type = TT_U16;
+            return 0;
+        }
+
+        if (strcmp(tok->s, "u32") == 0) {
+            tok->type = TT_U32;
+            return 0;
+        }
+
+        if (strcmp(tok->s, "u64") == 0) {
+            tok->type = TT_U64;
+            return 0;
+        }
+
+        break;
+    }
+
+    return -1;
+}
+
 int
 lexer_scan(struct gup_state *state, struct token *res)
 {
@@ -329,7 +380,9 @@ lexer_scan(struct gup_state *state, struct token *res)
             return 0;
         }
 
+        /* Is this an identifier? */
         if (lexer_scan_ident(state, c, res) == 0) {
+            lexer_is_kw(state, res);
             return 0;
         }
     }
