@@ -1,4 +1,4 @@
-pub proc main -> u32
+pub proc main -> u8
 {
     return 0;
 }

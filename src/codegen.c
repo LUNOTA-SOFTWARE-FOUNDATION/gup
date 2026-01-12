@@ -234,6 +234,10 @@ cg_emit_call(struct gup_state *state, struct ast_node *node)
 static int
 cg_emit_ret(struct gup_state *state, struct ast_node *node)
 {
+    struct datum_type *dtype;
+    struct symbol *symbol;
+    msize_t msize;
+
     if (state == NULL || node == NULL) {
         errno = -EINVAL;
         return -1;
@@ -244,7 +248,20 @@ cg_emit_ret(struct gup_state *state, struct ast_node *node)
         return -1;
     }
 
-    return mu_cg_retimm(state, node->v);
+    if ((symbol = state->this_func) == NULL) {
+        errno = -EIO;
+        return -1;
+    }
+
+    /* Promote type if needed */
+    dtype = &symbol->data_type;
+    if (dtype->ptr_depth > 0) {
+        msize = MSIZE_QWORD;
+    } else {
+        msize = type_to_msize(dtype->type);
+    }
+
+    return mu_cg_retimm(state, msize, node->v);
 }
 
 /*

@@ -56,11 +56,12 @@ int mu_cg_ret(struct gup_state *state);
  * register with an immediate
  *
  * @state: Compiler state
+ * @size:  Return size
  * @imm:   Immediate to return
  *
  * Returns zero on success
  */
-int mu_cg_retimm(struct gup_state *state, ssize_t imm);
+int mu_cg_retimm(struct gup_state *state, msize_t size, ssize_t imm);
 
 /*
  * Emit a jump to a label

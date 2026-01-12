@@ -24,6 +24,15 @@ static const char *dsztab[] = {
     [MSIZE_QWORD] = "dq"
 };
 
+/* Return <n> size lookup table */
+static const char *rettab[] = {
+    [MSIZE_BAD] = "bad",
+    [MSIZE_BYTE] = "al",
+    [MSIZE_WORD] = "ax",
+    [MSIZE_DWORD] = "eax",
+    [MSIZE_QWORD] = "rax"
+};
+
 /*
  * Ensure that we are currently in the desired section
  *
@@ -172,17 +181,23 @@ mu_cg_call(struct gup_state *state, const char *s)
 }
 
 int
-mu_cg_retimm(struct gup_state *state, ssize_t imm)
+mu_cg_retimm(struct gup_state *state, msize_t size, ssize_t imm)
 {
     if (state == NULL) {
         errno = -EINVAL;
         return -1;
     }
 
+    if (size >= MSIZE_MAX) {
+        errno = -EINVAL;
+        return -1;
+    }
+
     fprintf(
         state->out_fp,
-        "\tmov rax, %zd\n"
+        "\tmov %s, %zd\n"
         "\tret\n",
+        rettab[size],
         imm
     );
 
