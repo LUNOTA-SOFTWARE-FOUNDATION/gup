@@ -145,7 +145,18 @@ cg_emit_globvar(struct gup_state *state, struct ast_node *node)
     }
 
     dtype = &symbol->data_type;
-    msize = type_to_msize(dtype->type);
+
+    /*
+     * If we are dealing with a regular type, keep the size
+     * as is. However if it is a pointer, then it shall be
+     * promoted to the largest type.
+     */
+    if (dtype->ptr_depth > 0) {
+        msize = MSIZE_QWORD;
+    } else {
+        msize = type_to_msize(dtype->type);
+    }
+
     return mu_cg_var(state, SECTION_DATA, symbol->name, msize, 0);
 }
 
