@@ -974,6 +974,8 @@ begin_parse(struct gup_state *state, struct token *tok)
         break;
     case TT_PUB:
         break;
+    case TT_COMMENT:
+        break;
     default:
         if (parse_var(state, tok) == 0) {
             break;

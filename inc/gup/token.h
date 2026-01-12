@@ -39,6 +39,7 @@ typedef enum {
     TT_STRUCT,      /* 'struct' */
     TT_NUMBER,      /* <NUMBER> */
     TT_IDENT,       /* <IDENTIFIER> */
+    TT_COMMENT,     /* <COMMENT: IGNORED> */
 } tt_t;
 
 /*

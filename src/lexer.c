@@ -30,6 +30,18 @@ lexer_putback(struct gup_state *state, char c)
     state->putback = c;
 }
 
+static void
+lexer_skip_line(struct gup_state *state)
+{
+    char c;
+
+    while (read(state->in_fd, &c, 1) > 0) {
+        if (c == '\n') {
+            break;
+        }
+    }
+}
+
 /*
  * Returns true if the input character 'c' is
  * a whitespace character
@@ -424,6 +436,13 @@ lexer_scan(struct gup_state *state, struct token *res)
     case '/':
         res->type = TT_SLASH;
         res->c = c;
+        if ((c = lexer_nom(state, true)) != '/') {
+            lexer_putback(state, c);
+            return 0;
+        }
+
+        res->type = TT_COMMENT;
+        lexer_skip_line(state);
         return 0;
     case '(':
         res->type = TT_LPAREN;
