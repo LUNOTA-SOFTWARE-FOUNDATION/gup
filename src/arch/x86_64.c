@@ -6,6 +6,7 @@
 #include <errno.h>
 #include "gup/mu.h"
 #include "gup/state.h"
+#include "gup/trace.h"
 
 /* Section lookup table */
 static const char *sectab[] = {
@@ -215,8 +216,18 @@ mu_cg_struct(struct gup_state *state, struct ast_node *parent)
         return -1;
     }
 
+    if (parent->type != AST_STRUCT) {
+        trace_error(
+            state,
+            "expected AST_STRUCT got %d\n",
+            parent->type
+        );
+
+        return -1;
+    }
+
     cg_assert_section(state, SECTION_DATA);
-    cur = parent->right;
+    cur = parent->right->right;
 
     while (cur != NULL) {
         size = type_to_msize(cur->field_type);

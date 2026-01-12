@@ -25,6 +25,7 @@
  * @AST_RET:     Return statement
  * @AST_STRUCT:  Structure
  * @AST_FIELD:   Field
+ * @AST_INSTANCE: Instance
  */
 typedef enum {
     AST_NONE,
@@ -37,7 +38,7 @@ typedef enum {
     AST_CALL,
     AST_RET,
     AST_STRUCT,
-    AST_FIELD
+    AST_FIELD,
 } ast_op_t;
 
 /*

@@ -752,7 +752,7 @@ parse_struct(struct gup_state *state, struct token *tok)
     struct symbol *symbol;
     struct ast_node *root = NULL;
     struct ast_node *cur;
-    char *struct_name;
+    char *struct_name, *instance_name = NULL;
     char *identifier;
     struct datum_type type;
     int error;
@@ -777,6 +777,49 @@ parse_struct(struct gup_state *state, struct token *tok)
         return -1;
     }
 
+    if (lexer_scan(state, tok) < 0) {
+        ueof(state);
+        return -1;
+    }
+
+    switch (tok->type) {
+    case TT_SEMI:
+        return 0;
+    case TT_IDENT:
+        /*
+         * Creating an instance
+         *
+         * struct <name> <instance_name>;
+         */
+        instance_name = ptrbox_strdup(&state->ptrbox, tok->s);
+        if (instance_name == NULL) {
+            trace_error(state, "failed to allocate instance name\n");
+            return -1;
+        }
+
+        if (parse_expect(state, tok, TT_SEMI) < 0) {
+            return -1;
+        }
+
+        symbol = symbol_from_name(&state->symtab, struct_name);
+        if (ast_alloc_node(state, AST_STRUCT, &cur) < 0) {
+            trace_error(state, "failed to allocate AST_STRUCT\n");
+            return -1;
+        }
+
+        cur->s = ptrbox_strdup(&state->ptrbox, instance_name);
+        cur->right = symbol->tree;
+        return cg_compile_node(state, cur);
+    case TT_LBRACE:
+        if (parse_lbrace(state, TT_STRUCT, tok) < 0) {
+            return -1;
+        }
+        break;
+    default:
+        utok(state, tok->type);
+        return -1;
+    }
+
     error = symbol_new(
         &state->symtab,
         struct_name,
@@ -786,24 +829,6 @@ parse_struct(struct gup_state *state, struct token *tok)
 
     if (error < 0) {
         trace_error(state, "could not create new symbol\n");
-        return -1;
-    }
-
-    if (lexer_scan(state, tok) < 0) {
-        ueof(state);
-        return -1;
-    }
-
-    switch (tok->type) {
-    case TT_SEMI:
-        return 0;
-    case TT_LBRACE:
-        if (parse_lbrace(state, TT_STRUCT, tok) < 0) {
-            return -1;
-        }
-        break;
-    default:
-        utok(state, tok->type);
         return -1;
     }
 
@@ -857,11 +882,7 @@ parse_struct(struct gup_state *state, struct token *tok)
     }
 
     symbol->tree = root;
-    if (root != NULL) {
-        return cg_compile_node(state, root);
-    }
-
-    return -1;
+    return 0;
 }
 
 /*
