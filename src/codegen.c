@@ -9,20 +9,6 @@
 #include "gup/codegen.h"
 #include "gup/mu.h"
 
-static inline msize_t
-type_to_msize(gup_type_t type)
-{
-    switch (type) {
-    case GUP_TYPE_U8:  return MSIZE_BYTE;
-    case GUP_TYPE_U16: return MSIZE_WORD;
-    case GUP_TYPE_U32: return MSIZE_DWORD;
-    case GUP_TYPE_U64: return MSIZE_QWORD;
-    default:           return MSIZE_BAD;
-    }
-
-    return MSIZE_BAD;
-}
-
 /*
  * Emit inline-assembly from an AST node
  *
@@ -273,8 +259,6 @@ cg_emit_ret(struct gup_state *state, struct ast_node *node)
 static int
 cg_emit_struct(struct gup_state *state, struct ast_node *node)
 {
-    struct ast_node *cur;
-
     if (state == NULL || node == NULL) {
         errno = -EINVAL;
         return -1;
@@ -285,19 +269,7 @@ cg_emit_struct(struct gup_state *state, struct ast_node *node)
         return -1;
     }
 
-    cur = node->right;
-    while (cur != NULL) {
-        printf(
-            "detected field %s.%s type %d\n",
-            node->s,
-            cur->s,
-            cur->field_type
-        );
-
-        cur = cur->right;
-    }
-
-    return 0;
+    return mu_cg_struct(state, node);
 }
 
 int

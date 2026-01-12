@@ -203,3 +203,37 @@ mu_cg_retimm(struct gup_state *state, msize_t size, ssize_t imm)
 
     return 0;
 }
+
+int
+mu_cg_struct(struct gup_state *state, struct ast_node *parent)
+{
+    struct ast_node *cur;
+    msize_t size;
+
+    if (state == NULL || parent == NULL) {
+        errno = -EINVAL;
+        return -1;
+    }
+
+    cg_assert_section(state, SECTION_DATA);
+    cur = parent->right;
+
+    while (cur != NULL) {
+        size = type_to_msize(cur->field_type);
+        if (size == MSIZE_BAD) {
+            continue;
+        }
+
+        fprintf(
+            state->out_fp,
+            "%s.%s: %s 0\n",
+            parent->s,
+            cur->s,
+            dsztab[size]
+        );
+
+        cur = cur->right;
+    }
+
+    return 0;
+}

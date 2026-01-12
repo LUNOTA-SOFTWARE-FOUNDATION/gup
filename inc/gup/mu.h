@@ -8,6 +8,7 @@
 
 #include <stdbool.h>
 #include "gup/state.h"
+#include "gup/ast.h"
 
 /*
  * Valid machine sizes
@@ -20,6 +21,28 @@ typedef enum {
     MSIZE_QWORD,    /* 64 bits */
     MSIZE_MAX,
 } msize_t;
+
+/*
+ * Convert a program data type to a machine size
+ * constant.
+ *
+ * @type: Type to convert
+ *
+ * Returns MSIZE_BAD on failure
+ */
+static inline msize_t
+type_to_msize(gup_type_t type)
+{
+    switch (type) {
+    case GUP_TYPE_U8:  return MSIZE_BYTE;
+    case GUP_TYPE_U16: return MSIZE_WORD;
+    case GUP_TYPE_U32: return MSIZE_DWORD;
+    case GUP_TYPE_U64: return MSIZE_QWORD;
+    default:           return MSIZE_BAD;
+    }
+
+    return MSIZE_BAD;
+}
 
 /*
  * Inject assembly into the program
@@ -82,6 +105,16 @@ int mu_cg_jmp(struct gup_state *state, const char *s);
  * Returns zero on success
  */
 int mu_cg_call(struct gup_state *state, const char *s);
+
+/*
+ * Emit a struct
+ *
+ * @state:  Compiler state
+ * @parent: Parent node
+ *
+ * Returns zero on success
+ */
+int mu_cg_struct(struct gup_state *state, struct ast_node *parent);
 
 /*
  * Emit a variable
