@@ -15,6 +15,18 @@ struct foo {
     u64 qword;
 }
 
+// Instances of the above structures
 struct foo bundle;
 struct point xy_0;
 struct point xy_1;
+
+pub proc main -> u32 {
+    // Structure fields can easily be written or read from
+    // assembly like this
+
+    @ mov byte [rel xy_0.x], 0  ;
+    @ mov byte [rel xy_1.y], 1  ;
+
+    // Status of zero indicates success... as always
+    return 0;
+}
