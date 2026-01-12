@@ -52,6 +52,17 @@ int mu_cg_label(struct gup_state *state, const char *s, bool is_global);
 int mu_cg_ret(struct gup_state *state);
 
 /*
+ * Emit a return instruction as well as loading the return
+ * register with an immediate
+ *
+ * @state: Compiler state
+ * @imm:   Immediate to return
+ *
+ * Returns zero on success
+ */
+int mu_cg_retimm(struct gup_state *state, ssize_t imm);
+
+/*
  * Emit a jump to a label
  *
  * @state: Compiler state

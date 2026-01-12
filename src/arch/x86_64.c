@@ -170,3 +170,21 @@ mu_cg_call(struct gup_state *state, const char *s)
 
     return 0;
 }
+
+int
+mu_cg_retimm(struct gup_state *state, ssize_t imm)
+{
+    if (state == NULL) {
+        errno = -EINVAL;
+        return -1;
+    }
+
+    fprintf(
+        state->out_fp,
+        "\tmov rax, %zd\n"
+        "\tret\n",
+        imm
+    );
+
+    return 0;
+}
