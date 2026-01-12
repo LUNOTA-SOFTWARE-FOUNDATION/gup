@@ -1,4 +1,4 @@
-pub proc foo -> void {
-    @ xor rax, rax  ;
-    @ ret           ;
+pub proc main -> u32
+{
+    return 0;
 }
