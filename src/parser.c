@@ -153,6 +153,44 @@ parse_in_loop(struct gup_state *state)
 }
 
 /*
+ * Parse a pointer
+ *
+ * @state: Compiler state
+ * @tok:   Last token
+ * @datum: Type pointer belongs to
+ *
+ * Returns zero on success
+ */
+static int
+parse_ptr(struct gup_state *state, struct token *tok, struct datum_type *datum)
+{
+    if (state == NULL || tok == NULL) {
+        errno = -EINVAL;
+        return -1;
+    }
+
+    if (datum == NULL) {
+        errno = -EINVAL;
+        return -1;
+    }
+
+    if (tok->type != TT_STAR) {
+        utok1(state, "STAR", tokstr1(tok));
+        return -1;
+    }
+
+    while (tok->type == TT_STAR) {
+        if (lexer_scan(state, tok) < 0) {
+            ueof(state);
+            return -1;
+        }
+        ++datum->ptr_depth;
+    }
+
+    return 0;
+}
+
+/*
  * Parse a data type
  *
  * @state: Compiler state
@@ -173,6 +211,18 @@ parse_type(struct gup_state *state, struct token *tok, struct datum_type *res)
     }
 
     res->type = type;
+    res->ptr_depth = 0;
+
+    if (lexer_scan(state, tok) < 0) {
+        ueof(state);
+        return -1;
+    }
+
+    if (tok->type == TT_STAR) {
+        if (parse_ptr(state, tok, res) < 0)
+            return -1;
+    }
+
     return 0;
 }
 
@@ -384,13 +434,8 @@ parse_proc(struct gup_state *state, struct token *tok)
     /* Set the new symbol */
     symbol->global = is_global;
     symbol->type = SYMBOL_FUNC;
+    symbol->data_type = type;
     root->symbol = symbol;
-
-    /* We expect a ';' or a '{' */
-    if (lexer_scan(state, tok) < 0) {
-        ueof(state);
-        return -1;
-    }
 
     switch (tok->type) {
     case TT_SEMI:
@@ -468,7 +513,8 @@ parse_var(struct gup_state *state, struct token *tok)
     }
 
     /* Now an identifier */
-    if (parse_expect(state, tok, TT_IDENT) < 0) {
+    if (tok->type != TT_IDENT) {
+        utok1(state, "IDENT", tokstr1(tok));
         return -1;
     }
 
@@ -490,6 +536,7 @@ parse_var(struct gup_state *state, struct token *tok)
     }
 
     symbol->type = SYMBOL_VAR;
+    symbol->data_type = type;
     root->symbol = symbol;
 
     if (parse_expect(state, tok, TT_SEMI) < 0) {

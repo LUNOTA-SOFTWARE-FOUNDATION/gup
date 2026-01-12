@@ -23,9 +23,11 @@ typedef enum {
  * Represents the specific type of a piece of data
  *
  * @type: Type of data
+ * @ptr_depth: Pointer depth (0 if non-pointer)
  */
 struct datum_type {
     gup_type_t type;
+    size_t ptr_depth;
 };
 
 #endif  /* !GUP_TYPE_H */
