@@ -232,6 +232,7 @@ mu_cg_struct(struct gup_state *state, struct ast_node *parent)
     while (cur != NULL) {
         size = type_to_msize(cur->field_type);
         if (size == MSIZE_BAD) {
+            cur = cur->right;
             continue;
         }
 
