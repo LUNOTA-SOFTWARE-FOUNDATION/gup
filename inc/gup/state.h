@@ -38,6 +38,7 @@ typedef enum {
  * @scope_depth: Current scope depth
  * @loop_count: Number of loops in program
  * @cur_section: Current section
+ * @this_func: Current function
  * @out_fp: Output file
  */
 struct gup_state {
@@ -50,6 +51,7 @@ struct gup_state {
     size_t scope_depth;
     size_t loop_count;
     bin_section_t cur_section;
+    struct symbol *this_func;
     FILE *out_fp;
 };
 

@@ -317,6 +317,7 @@ parse_rbrace(struct gup_state *state, struct token *tok)
         }
 
         root->epilogue = 1;
+        state->this_func = NULL;
         return cg_compile_node(state, root);
     case TT_LOOP:
         if (ast_alloc_node(state, AST_LOOP, &root) < 0) {
@@ -377,6 +378,11 @@ parse_proc(struct gup_state *state, struct token *tok)
 
     if (state == NULL || tok == NULL) {
         errno = -EINVAL;
+        return -1;
+    }
+
+    if (state->this_func != NULL) {
+        trace_error(state, "nested functions not supported\n");
         return -1;
     }
 
@@ -446,6 +452,7 @@ parse_proc(struct gup_state *state, struct token *tok)
             return -1;
         }
 
+        state->this_func = symbol;
         return cg_compile_node(state, root);
     default:
         utok(state, tok->type);
