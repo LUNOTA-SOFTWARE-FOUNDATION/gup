@@ -11,7 +11,7 @@
 #include "gup/state.h"
 #include "gup/parser.h"
 
-#define GUP_VERSION "0.0.3"
+#define GUP_VERSION "0.0.4"
 #define ELAPSED_NS(STARTP, ENDP)                            \
     (double)((ENDP)->tv_sec - (STARTP)->tv_sec) * 1.0e9 +    \
         (double)((ENDP)->tv_nsec - (STARTP)->tv_nsec)
