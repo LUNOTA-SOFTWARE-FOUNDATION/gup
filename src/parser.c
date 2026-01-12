@@ -74,6 +74,7 @@ static const char *toktab[] = {
     [TT_LOOP]   = "LOOP",
     [TT_BREAK]  = "BREAK",
     [TT_RETURN] = "RETURN",
+    [TT_STRUCT] = "STRUCT",
     [TT_NUMBER] = "NUMBER",
     [TT_IDENT]  = "IDENTIFIER"
 };

@@ -35,6 +35,7 @@ typedef enum {
     TT_LOOP,        /* 'loop' */
     TT_BREAK,       /* 'break' */
     TT_RETURN,      /* 'return' */
+    TT_STRUCT,      /* 'struct' */
     TT_NUMBER,      /* <NUMBER> */
     TT_IDENT,       /* <IDENTIFIER> */
 } tt_t;
