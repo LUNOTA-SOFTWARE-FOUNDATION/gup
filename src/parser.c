@@ -797,6 +797,9 @@ parse_struct(struct gup_state *state, struct token *tok)
     case TT_SEMI:
         return 0;
     case TT_LBRACE:
+        if (parse_lbrace(state, TT_STRUCT, tok) < 0) {
+            return -1;
+        }
         break;
     default:
         utok(state, tok->type);
@@ -819,6 +822,7 @@ parse_struct(struct gup_state *state, struct token *tok)
         }
 
         if (tok->type == TT_RBRACE) {
+            parse_rbrace(state, tok);
             break;
         }
 
