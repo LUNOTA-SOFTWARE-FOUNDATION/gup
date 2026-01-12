@@ -747,11 +747,13 @@ parse_return(struct gup_state *state, struct token *tok)
 static int
 parse_struct(struct gup_state *state, struct token *tok)
 {
+    struct symbol *symbol;
     struct ast_node *root = NULL;
     struct ast_node *cur;
     char *struct_name;
     char *identifier;
     struct datum_type type;
+    int error;
 
     if (state == NULL || tok == NULL) {
         errno = -EINVAL;
@@ -768,7 +770,35 @@ parse_struct(struct gup_state *state, struct token *tok)
     }
 
     struct_name = ptrbox_strdup(&state->ptrbox, tok->s);
-    if (parse_expect(state, tok, TT_LBRACE) < 0) {
+    if (struct_name == NULL) {
+        trace_error(state, "failed to dup struct name\n");
+        return -1;
+    }
+
+    error = symbol_new(
+        &state->symtab,
+        struct_name,
+        GUP_TYPE_VOID,
+        &symbol
+    );
+
+    if (error < 0) {
+        trace_error(state, "could not create new symbol\n");
+        return -1;
+    }
+
+    if (lexer_scan(state, tok) < 0) {
+        ueof(state);
+        return -1;
+    }
+
+    switch (tok->type) {
+    case TT_SEMI:
+        return 0;
+    case TT_LBRACE:
+        break;
+    default:
+        utok(state, tok->type);
         return -1;
     }
 
@@ -779,6 +809,7 @@ parse_struct(struct gup_state *state, struct token *tok)
 
     cur = root;
     cur->s = struct_name;
+    cur->symbol = symbol;
 
     for (;;) {
         if (lexer_scan(state, tok) < 0) {
