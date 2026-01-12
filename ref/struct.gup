@@ -1,0 +1,20 @@
+//
+// Copyright (c) 2026, Ian Moffett.
+// Provided under the BSD-3 clause.
+//
+
+struct point {
+    u32 x;
+    u32 y;
+}
+
+struct foo {
+    u8 byte;
+    u16 word;
+    u32 dword;
+    u64 qword;
+}
+
+struct foo bundle;
+struct point xy_0;
+struct point xy_1;
