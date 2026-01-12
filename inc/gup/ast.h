@@ -20,6 +20,7 @@
  * @AST_LOOP: Loop block
  * @AST_GLOBVAR: Global variable
  * @AST_BREAK:   Break statement
+ * @AST_CONTINUE: Continue statement
  * @AST_CALL:    Procedure call
  * @AST_RET:     Return statement
  * @AST_STRUCT:  Structure
@@ -32,6 +33,7 @@ typedef enum {
     AST_LOOP,
     AST_GLOBVAR,
     AST_BREAK,
+    AST_CONTINUE,
     AST_CALL,
     AST_RET,
     AST_STRUCT,

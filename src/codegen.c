@@ -178,6 +178,37 @@ cg_emit_break(struct gup_state *state, struct ast_node *node)
 }
 
 /*
+ * Emit a continue statement
+ *
+ * @state: Compiler state
+ * @node:  Node of continue statement
+ */
+static int
+cg_emit_continue(struct gup_state *state, struct ast_node *node)
+{
+    char label_buf[32];
+
+    if (state == NULL || node == NULL) {
+        errno = -EINVAL;
+        return -1;
+    }
+
+    if (node->type != AST_CONTINUE) {
+        errno = -EINVAL;
+        return -1;
+    }
+
+    snprintf(
+        label_buf,
+        sizeof(label_buf),
+        "L.%zu",
+        state->loop_count - 1
+    );
+
+    return mu_cg_jmp(state, label_buf);
+}
+
+/*
  * Emit a procedure call
  *
  * @state: Compiler state
@@ -307,6 +338,12 @@ cg_compile_node(struct gup_state *state, struct ast_node *node)
         break;
     case AST_BREAK:
         if (cg_emit_break(state, node) < 0) {
+            return -1;
+        }
+
+        break;
+    case AST_CONTINUE:
+        if (cg_emit_continue(state, node) < 0) {
             return -1;
         }
 

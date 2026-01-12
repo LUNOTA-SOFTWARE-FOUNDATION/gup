@@ -860,6 +860,46 @@ parse_struct(struct gup_state *state, struct token *tok)
 }
 
 /*
+ * Parse a continue statement
+ *
+ * @state: Compiler state
+ * @tok:   Last token
+ *
+ * Return zero on success
+ */
+static int
+parse_continue(struct gup_state *state, struct token *tok)
+{
+    struct ast_node *root;
+
+    if (state == NULL || tok == NULL) {
+        errno = -EINVAL;
+        return -1;
+    }
+
+    if (tok->type != TT_CONT) {
+        utok1(state, "CONTINUE", tokstr1(tok));
+        return -1;
+    }
+
+    if (!parse_in_loop(state)) {
+        trace_error(state, "CONTINUE statement not in loop\n");
+        return -1;
+    }
+
+    if (parse_expect(state, tok, TT_SEMI) < 0) {
+        return -1;
+    }
+
+    if (ast_alloc_node(state, AST_CONTINUE, &root) < 0) {
+        trace_error(state, "failed to allocate AST_CONTINUE\n");
+        return -1;
+    }
+
+    return cg_compile_node(state, root);
+}
+
+/*
  * Begin parsing tokens from the input source
  *
  * @state: Compiler state
@@ -900,6 +940,12 @@ begin_parse(struct gup_state *state, struct token *tok)
         break;
     case TT_BREAK:
         if (parse_break(state, tok) < 0) {
+            return -1;
+        }
+
+        break;
+    case TT_CONT:
+        if (parse_continue(state, tok) < 0) {
             return -1;
         }
 
