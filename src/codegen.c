@@ -303,6 +303,39 @@ cg_emit_struct(struct gup_state *state, struct ast_node *node)
     return mu_cg_struct(state, node);
 }
 
+/*
+ * Emit a struct access
+ *
+ * @state: Compiler state
+ * @node:  Node of struct access
+ */
+static int
+cg_emit_access(struct gup_state *state, struct ast_node *node)
+{
+    struct ast_node *cur;
+
+    if (state == NULL || node == NULL) {
+        errno = -EINVAL;
+        return -1;
+    }
+
+    if (node->type != AST_ACCESS) {
+        errno = -EINVAL;
+        return -1;
+    }
+
+    cur = node;
+    printf("detected access of [");
+    while (cur != NULL) {
+        printf("%s", cur->s);
+        if ((cur = cur->right) != NULL)
+            printf(".");
+    }
+
+    printf("]\n");
+    return 0;
+}
+
 int
 cg_compile_node(struct gup_state *state, struct ast_node *node)
 {
@@ -362,6 +395,12 @@ cg_compile_node(struct gup_state *state, struct ast_node *node)
         break;
     case AST_STRUCT:
         if (cg_emit_struct(state, node) < 0) {
+            return -1;
+        }
+
+        break;
+    case AST_ACCESS:
+        if (cg_emit_access(state, node) < 0) {
             return -1;
         }
 

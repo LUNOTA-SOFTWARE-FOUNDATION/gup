@@ -26,6 +26,7 @@
  * @AST_STRUCT:  Structure
  * @AST_FIELD:   Field
  * @AST_INSTANCE: Instance
+ * @AST_ACCESS: Structure access
  */
 typedef enum {
     AST_NONE,
@@ -39,6 +40,7 @@ typedef enum {
     AST_RET,
     AST_STRUCT,
     AST_FIELD,
+    AST_ACCESS
 } ast_op_t;
 
 /*

@@ -645,6 +645,71 @@ parse_call(struct gup_state *state, const char *ident, struct token *tok)
     return cg_compile_node(state, root);
 }
 
+static int
+parse_struct_access(struct gup_state *state, char *ident, struct token *tok)
+{
+    struct ast_node *root, *cur;
+
+    if (state == NULL || ident == NULL) {
+        errno = -EINVAL;
+        return -1;
+    }
+
+    if (tok == NULL) {
+        errno = -EINVAL;
+        return -1;
+    }
+
+    if (tok->type != TT_DOT) {
+        utok1(state, "DOT", tokstr1(tok));
+        return -1;
+    }
+
+    if (ast_alloc_node(state, AST_ACCESS, &root) < 0) {
+        trace_error(state, "failed to allocated AST_ACCESS\n");
+        return -1;
+    }
+
+    root->s = ident;
+    cur = root;
+
+    /* Begin scanning fields */
+    for (;;) {
+        if (parse_expect(state, tok, TT_IDENT) < 0) {
+            return -1;
+        }
+
+        if (ast_alloc_node(state, AST_ACCESS, &cur->right) < 0) {
+            trace_error(state, "failed to access AST_ACCESS\n");
+            return -1;
+        }
+
+        cur = cur->right;
+        cur->s = ptrbox_strdup(&state->ptrbox, tok->s);
+        if (cur->s == NULL) {
+            trace_error(state, "failed to dup field name\n");
+            return -1;
+        }
+
+        /* Next token should be '.' or ';' */
+        if (lexer_scan(state, tok) < 0) {
+            ueof(state);
+            return -1;
+        }
+
+        if (tok->type == TT_SEMI) {
+            break;
+        }
+
+        if (tok->type != TT_DOT) {
+            utok1(state, "DOT or SEMI", tokstr1(tok));
+            return -1;
+        }
+    }
+
+    return cg_compile_node(state, root);
+}
+
 /*
  * Parse an identifier token
  *
@@ -677,6 +742,12 @@ parse_ident(struct gup_state *state, struct token *tok)
     switch (tok->type) {
     case TT_LPAREN:
         if (parse_call(state, ident, tok) < 0) {
+            return -1;
+        }
+
+        break;
+    case TT_DOT:
+        if (parse_struct_access(state, ident, tok) < 0) {
             return -1;
         }
 
