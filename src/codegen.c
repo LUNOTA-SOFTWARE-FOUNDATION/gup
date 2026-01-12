@@ -225,6 +225,28 @@ cg_emit_call(struct gup_state *state, struct ast_node *node)
     return mu_cg_call(state, symbol->name);
 }
 
+/*
+ * Emit a return
+ *
+ * @state: Compiler state
+ * @node:  Node of return
+ */
+static int
+cg_emit_ret(struct gup_state *state, struct ast_node *node)
+{
+    if (state == NULL || node == NULL) {
+        errno = -EINVAL;
+        return -1;
+    }
+
+    if (node->type != AST_RET) {
+        errno = -EINVAL;
+        return -1;
+    }
+
+    return mu_cg_retimm(state, node->v);
+}
+
 int
 cg_compile_node(struct gup_state *state, struct ast_node *node)
 {
@@ -266,6 +288,12 @@ cg_compile_node(struct gup_state *state, struct ast_node *node)
         break;
     case AST_CALL:
         if (cg_emit_call(state, node) < 0) {
+            return -1;
+        }
+
+        break;
+    case AST_RET:
+        if (cg_emit_ret(state, node) < 0) {
             return -1;
         }
 

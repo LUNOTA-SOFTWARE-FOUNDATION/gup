@@ -21,6 +21,7 @@
  * @AST_GLOBVAR: Global variable
  * @AST_BREAK:   Break statement
  * @AST_CALL:    Procedure call
+ * @AST_RET:     Return statement
  */
 typedef enum {
     AST_NONE,
@@ -29,7 +30,8 @@ typedef enum {
     AST_LOOP,
     AST_GLOBVAR,
     AST_BREAK,
-    AST_CALL
+    AST_CALL,
+    AST_RET
 } ast_op_t;
 
 /*
@@ -50,6 +52,7 @@ struct ast_node {
     uint8_t epilogue : 1;
     union {
         char *s;
+        ssize_t v;
     };
 };
 

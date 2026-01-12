@@ -39,6 +39,7 @@ typedef enum {
  * @loop_count: Number of loops in program
  * @cur_section: Current section
  * @this_func: Current function
+ * @unreachable: Entering unreachable code if set
  * @out_fp: Output file
  */
 struct gup_state {
@@ -52,6 +53,7 @@ struct gup_state {
     size_t loop_count;
     bin_section_t cur_section;
     struct symbol *this_func;
+    uint8_t unreachable : 1;
     FILE *out_fp;
 };
 

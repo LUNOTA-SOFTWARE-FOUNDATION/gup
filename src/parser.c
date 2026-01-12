@@ -311,6 +311,11 @@ parse_rbrace(struct gup_state *state, struct token *tok)
 
     switch (scope) {
     case TT_PROC:
+        if (state->unreachable) {
+            state->unreachable = 0;
+            return 0;
+        }
+
         if (ast_alloc_node(state, AST_PROC, &root) < 0) {
             trace_error(state, "could not allocate AST_PROC epilogue\n");
             return -1;
@@ -680,6 +685,59 @@ parse_ident(struct gup_state *state, struct token *tok)
 }
 
 /*
+ * Parse a return statement
+ *
+ * @state: Compiler state
+ * @tok: Last token
+ */
+static int
+parse_return(struct gup_state *state, struct token *tok)
+{
+    struct ast_node *root;
+    struct datum_type *func_type;
+    struct symbol *func;
+
+    if (state == NULL || tok == NULL) {
+        errno = -EINVAL;
+        return -1;
+    }
+
+    if ((func = state->this_func) == NULL) {
+        trace_error(state, "cannot use RETURN outside of function\n");
+        return -1;
+    }
+
+    if (tok->type != TT_RETURN) {
+        utok(state, tok->type);
+        return -1;
+    }
+
+    func_type = &func->data_type;
+    if (func_type->type == GUP_TYPE_VOID) {
+        trace_error(state, "cannot use RETURN in VOID function\n");
+        return -1;
+    }
+
+    /* TODO: Support binary expressions */
+    if (parse_expect(state, tok, TT_NUMBER) < 0) {
+        return -1;
+    }
+
+    if (ast_alloc_node(state, AST_RET, &root) < 0) {
+        trace_error(state, "failed to allocate AST_RET\n");
+        return -1;
+    }
+
+    root->v = tok->v;
+    if (parse_expect(state, tok, TT_SEMI) < 0) {
+        return -1;
+    }
+
+    state->unreachable = 1;
+    return cg_compile_node(state, root);
+}
+
+/*
  * Begin parsing tokens from the input source
  *
  * @state: Compiler state
@@ -726,6 +784,12 @@ begin_parse(struct gup_state *state, struct token *tok)
         break;
     case TT_IDENT:
         if (parse_ident(state, tok) < 0) {
+            return -1;
+        }
+
+        break;
+    case TT_RETURN:
+        if (parse_return(state, tok) < 0) {
             return -1;
         }
 
