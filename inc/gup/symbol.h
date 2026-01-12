@@ -11,6 +11,9 @@
 #include <stddef.h>
 #include "gup/types.h"
 
+/* Forward declaration */
+struct ast_node;
+
 /* Symbol ID */
 typedef size_t sym_id_t;
 
@@ -32,6 +35,7 @@ typedef enum {
  * @type: Symbol type
  * @global: If set, symbol is global
  * @data_type: Symbol data type
+ * @tree: Tree associated with symbol
  * @link: Queue link
  */
 struct symbol {
@@ -40,6 +44,7 @@ struct symbol {
     sym_type_t type;
     uint8_t global : 1;
     struct datum_type data_type;
+    struct ast_node *tree;
     TAILQ_ENTRY(symbol) link;
 };
 

@@ -850,6 +850,7 @@ parse_struct(struct gup_state *state, struct token *tok)
         cur->field_type = type.type;
     }
 
+    symbol->tree = root;
     if (root != NULL) {
         return cg_compile_node(state, root);
     }
