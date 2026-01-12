@@ -739,6 +739,94 @@ parse_return(struct gup_state *state, struct token *tok)
 }
 
 /*
+ * Parse a struct
+ *
+ * @state: Compiler state
+ * @tok: Last token
+ */
+static int
+parse_struct(struct gup_state *state, struct token *tok)
+{
+    struct ast_node *root = NULL;
+    struct ast_node *cur;
+    char *struct_name;
+    char *identifier;
+    struct datum_type type;
+
+    if (state == NULL || tok == NULL) {
+        errno = -EINVAL;
+        return -1;
+    }
+
+    if (tok->type != TT_STRUCT) {
+        errno = -EINVAL;
+        return -1;
+    }
+
+    if (parse_expect(state, tok, TT_IDENT) < 0) {
+        return -1;
+    }
+
+    struct_name = ptrbox_strdup(&state->ptrbox, tok->s);
+    if (parse_expect(state, tok, TT_LBRACE) < 0) {
+        return -1;
+    }
+
+    if (ast_alloc_node(state, AST_STRUCT, &root) < 0) {
+        trace_error(state, "failed to allocate AST_STRUCT\n");
+        return -1;
+    }
+
+    cur = root;
+    cur->s = struct_name;
+
+    for (;;) {
+        if (lexer_scan(state, tok) < 0) {
+            ueof(state);
+            return -1;
+        }
+
+        if (tok->type == TT_RBRACE) {
+            break;
+        }
+
+        if (parse_type(state, tok, &type) < 0) {
+            return -1;
+        }
+
+        if (tok->type != TT_IDENT) {
+            utok1(state, "IDENT", tokstr1(tok));
+            return -1;
+        }
+
+        identifier = ptrbox_strdup(&state->ptrbox, tok->s);
+        if (identifier == NULL) {
+            trace_error(state, "failed to dup identifier\n");
+            return -1;
+        }
+
+        if (parse_expect(state, tok, TT_SEMI) < 0) {
+            return -1;
+        }
+
+        if (ast_alloc_node(state, AST_FIELD, &cur->right) < 0) {
+            trace_error(state, "failed to allocate AST_FIELD\n");
+            return -1;
+        }
+
+        cur = cur->right;
+        cur->s = identifier;
+        cur->field_type = type.type;
+    }
+
+    if (root != NULL) {
+        return cg_compile_node(state, root);
+    }
+
+    return -1;
+}
+
+/*
  * Begin parsing tokens from the input source
  *
  * @state: Compiler state
@@ -791,6 +879,12 @@ begin_parse(struct gup_state *state, struct token *tok)
         break;
     case TT_RETURN:
         if (parse_return(state, tok) < 0) {
+            return -1;
+        }
+
+        break;
+    case TT_STRUCT:
+        if (parse_struct(state, tok) < 0) {
             return -1;
         }
 

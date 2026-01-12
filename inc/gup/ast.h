@@ -22,6 +22,8 @@
  * @AST_BREAK:   Break statement
  * @AST_CALL:    Procedure call
  * @AST_RET:     Return statement
+ * @AST_STRUCT:  Structure
+ * @AST_FIELD:   Field
  */
 typedef enum {
     AST_NONE,
@@ -31,7 +33,9 @@ typedef enum {
     AST_GLOBVAR,
     AST_BREAK,
     AST_CALL,
-    AST_RET
+    AST_RET,
+    AST_STRUCT,
+    AST_FIELD
 } ast_op_t;
 
 /*
@@ -43,6 +47,7 @@ typedef enum {
  * @right: Right node
  * @symbol: Symbol associated with node
  * @epilogue: If set, indicates end of block
+ * @field_type: Used in structure fields
  */
 struct ast_node {
     ast_op_t type;
@@ -50,6 +55,7 @@ struct ast_node {
     struct ast_node *right;
     struct symbol *symbol;
     uint8_t epilogue : 1;
+    gup_type_t field_type;
     union {
         char *s;
         ssize_t v;
