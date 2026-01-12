@@ -34,6 +34,7 @@ typedef enum {
     TT_PROC,        /* 'proc' */
     TT_LOOP,        /* 'loop' */
     TT_BREAK,       /* 'break' */
+    TT_CONT,        /* 'continue' */
     TT_RETURN,      /* 'return' */
     TT_STRUCT,      /* 'struct' */
     TT_NUMBER,      /* <NUMBER> */
