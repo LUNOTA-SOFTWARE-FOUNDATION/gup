@@ -646,6 +646,44 @@ parse_call(struct gup_state *state, const char *ident, struct token *tok)
     return cg_compile_node(state, root);
 }
 
+/*
+ * Parse a value
+ *
+ * @state: Compiler state
+ * @tok:   Last token
+ *
+ * Returns an AST node on success
+ */
+static struct ast_node *
+parse_value(struct gup_state *state, struct token *tok)
+{
+    struct ast_node *root;
+
+    if (state == NULL || tok == NULL) {
+        return NULL;
+    }
+
+    if (parse_expect(state, tok, TT_NUMBER) < 0) {
+        return NULL;
+    }
+
+    if (ast_alloc_node(state, AST_NUMBER, &root) < 0) {
+        trace_error(state, "failed to allocate AST_NUMBER\n");
+        return NULL;
+    }
+
+    root->v = tok->v;
+    return root;
+}
+
+/*
+ * Parse a struct access
+ *
+ * @state: Compiler state
+ * @tok:   Last token
+ *
+ * Returns zero on success
+ */
 static int
 parse_struct_access(struct gup_state *state, char *ident, struct token *tok)
 {
@@ -692,23 +730,42 @@ parse_struct_access(struct gup_state *state, char *ident, struct token *tok)
             return -1;
         }
 
-        /* Next token should be '.' or ';' */
+        /* Grab the next token */
         if (lexer_scan(state, tok) < 0) {
             ueof(state);
             return -1;
         }
 
-        if (tok->type == TT_SEMI) {
-            break;
-        }
+        switch (tok->type) {
+        case TT_DOT:
+            continue;
+        case TT_EQUALS:
+            /*
+             * If we have an assign operator after the struct field,
+             * we'll need to splice it with the root.
+             */
+            if (ast_alloc_node(state, AST_ASSIGN, &cur) < 0) {
+                trace_error(state, "failed to access AST_ACCESS\n");
+                return -1;
+            }
 
-        if (tok->type != TT_DOT) {
-            utok1(state, "DOT or SEMI", tokstr1(tok));
+            cur->left = root;
+            if ((cur->right = parse_value(state, tok)) == NULL) {
+                return -1;
+            }
+
+            if (parse_expect(state, tok, TT_SEMI) < 0) {
+                return -1;
+            }
+
+            return cg_compile_node(state, cur);
+        default:
+            utok1(state, "DOT or EQUALS", tokstr1(tok));
             return -1;
         }
     }
 
-    return cg_compile_node(state, root);
+    return 0;
 }
 
 /*

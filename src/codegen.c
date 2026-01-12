@@ -310,29 +310,30 @@ cg_emit_struct(struct gup_state *state, struct ast_node *node)
  * @node:  Node of struct access
  */
 static int
-cg_emit_access(struct gup_state *state, struct ast_node *node)
+cg_emit_assign(struct gup_state *state, struct ast_node *node)
 {
-    struct ast_node *cur;
+    struct ast_node *right, *cur;
 
     if (state == NULL || node == NULL) {
         errno = -EINVAL;
         return -1;
     }
 
-    if (node->type != AST_ACCESS) {
+    if (node->type != AST_ASSIGN) {
         errno = -EINVAL;
         return -1;
     }
 
-    cur = node;
-    printf("detected access of [");
+    cur = node->left;
+    right = node->right;
+    printf("assigning value of %zd to ", right->v);
     while (cur != NULL) {
         printf("%s", cur->s);
         if ((cur = cur->right) != NULL)
             printf(".");
     }
 
-    printf("]\n");
+    printf("\n");
     return 0;
 }
 
@@ -399,8 +400,8 @@ cg_compile_node(struct gup_state *state, struct ast_node *node)
         }
 
         break;
-    case AST_ACCESS:
-        if (cg_emit_access(state, node) < 0) {
+    case AST_ASSIGN:
+        if (cg_emit_assign(state, node) < 0) {
             return -1;
         }
 
