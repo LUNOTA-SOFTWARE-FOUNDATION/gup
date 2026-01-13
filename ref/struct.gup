@@ -27,6 +27,12 @@ pub proc main -> u32 {
     @ mov byte [rel xy_0.x], 0  ;
     @ mov byte [rel xy_1.y], 1  ;
 
+    // You may also access them through the '.' operator. As of now,
+    // only byte size loads are supported. Either way, this operation
+    // may be done as follows...
+
+    bundle.byte = 123;
+
     // Status of zero indicates success... as always
     return 0;
 }
