@@ -3,6 +3,8 @@
 // Provided under the BSD-3 clause.
 //
 
+type void * -> EfiHandle;
+
 struct EfiTableHdr {
     u64 signature;
     u32 revision;
