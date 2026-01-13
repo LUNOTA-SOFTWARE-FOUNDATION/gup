@@ -41,6 +41,7 @@ typedef enum {
     TT_RETURN,      /* 'return' */
     TT_STRUCT,      /* 'struct' */
     TT_IF,          /* 'if' */
+    TT_TYPE,        /* 'type' */
     TT_NUMBER,      /* <NUMBER> */
     TT_IDENT,       /* <IDENTIFIER> */
     TT_COMMENT,     /* <COMMENT: IGNORED> */
