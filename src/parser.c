@@ -200,6 +200,35 @@ parse_ptr(struct gup_state *state, struct token *tok, struct datum_type *datum)
 }
 
 /*
+ * Look up a typedef
+ *
+ * @state: Compiler state
+ * @name:  Typedef name
+ *
+ * Returns symbol of typedef
+ */
+static struct symbol *
+parse_lookup_typedef(struct gup_state *state, const char *name)
+{
+    struct symbol *symbol;
+
+    if (state == NULL || name == NULL) {
+        return NULL;
+    }
+
+    symbol = symbol_from_name(&state->symtab, name);
+    if (symbol == NULL) {
+        return NULL;
+    }
+
+    if (symbol->type != SYMBOL_TYPEDEF) {
+        return NULL;
+    }
+
+    return symbol;
+}
+
+/*
  * Parse a data type
  *
  * @state: Compiler state
@@ -211,12 +240,21 @@ parse_ptr(struct gup_state *state, struct token *tok, struct datum_type *datum)
 static int
 parse_type(struct gup_state *state, struct token *tok, struct datum_type *res)
 {
+    struct symbol *type_symbol;
+    struct datum_type *data_type = NULL;
     gup_type_t type;
 
     type = parse_get_type(tok->type);
     if (type == GUP_TYPE_BAD) {
-        utok1(state, "TYPE", tokstr1(tok));
-        return -1;
+        type_symbol = parse_lookup_typedef(state, tok->s);
+        if (type_symbol == NULL) {
+            utok1(state, "TYPE", tokstr1(tok));
+            return -1;
+        }
+
+        data_type = &type_symbol->data_type;
+        *res = type_symbol->data_type;
+        type = data_type->type;
     }
 
     res->type = type;
@@ -1146,6 +1184,77 @@ parse_if(struct gup_state *state, struct token *tok)
     return cg_compile_node(state, root);
 }
 
+static int
+parse_typedef(struct gup_state *state, struct token *tok)
+{
+    char *type_dest;
+    struct datum_type type_src;
+    struct symbol *symbol;
+    int error;
+
+    if (state == NULL || tok == NULL) {
+        errno = -EINVAL;
+        return -1;
+    }
+
+    if (tok->type != TT_TYPE) {
+        utok1(state, "TYPE", tokstr1(tok));
+        return -1;
+    }
+
+    /* We need a type now */
+    if (lexer_scan(state, tok) < 0) {
+        ueof(state);
+        return -1;
+    }
+
+    if (parse_type(state, tok, &type_src) < 0) {
+        return -1;
+    }
+
+    /* Arrow tail */
+    if (tok->type != TT_MINUS) {
+        utok1(state, "MINUS", tokstr1(tok));
+        return -1;
+    }
+
+    /* Arrow head */
+    if (parse_expect(state, tok, TT_GT) < 0) {
+        return -1;
+    }
+
+    /* The type to define */
+    if (parse_expect(state, tok, TT_IDENT) < 0) {
+        return -1;
+    }
+
+    type_dest = ptrbox_strdup(&state->ptrbox, tok->s);
+    if (type_dest == NULL) {
+        trace_error(state, "failed to allocate type_dest\n");
+        return -1;
+    }
+
+    if (parse_expect(state, tok, TT_SEMI) < 0) {
+        return -1;
+    }
+
+    error = symbol_new(
+        &state->symtab,
+        type_dest,
+        GUP_TYPE_VOID,
+        &symbol
+    );
+
+    if (error < 0) {
+        trace_error(state, "failed to allocate type symbol\n");
+        return -1;
+    }
+
+    symbol->data_type = type_src;
+    symbol->type = SYMBOL_TYPEDEF;
+    return 0;
+}
+
 /*
  * Begin parsing tokens from the input source
  *
@@ -1217,6 +1326,12 @@ begin_parse(struct gup_state *state, struct token *tok)
         break;
     case TT_IF:
         if (parse_if(state, tok) < 0) {
+            return -1;
+        }
+
+        break;
+    case TT_TYPE:
+        if (parse_typedef(state, tok) < 0) {
             return -1;
         }
 
