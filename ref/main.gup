@@ -52,7 +52,8 @@ struct point xy_1;
 // the '->' operator followed by a type at the end of the procedure
 // name.
 //
-pub proc main -> u32 {
+pub proc main -> u32
+{
     // Structure fields can easily be written or read from
     // assembly like this
 
