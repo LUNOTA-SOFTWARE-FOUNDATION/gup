@@ -3,34 +3,89 @@
 // Provided under the BSD-3 clause.
 //
 
-@ [bits 16]    ;
-@ [org 0x7C00] ;
+@ [bits 16]     ;
+@ [org 0x7C00]  ;
 
+//
+// Represents bootup variables that need
+// to be saved
+//
+// @boot_drive: Drive used for bootup
+//
+struct boot_vars {
+    u8 boot_drive;
+}
+
+//
+// Forward declarations
+//
+proc main -> void;
 proc halt -> void;
+proc writestr -> void;
 
+//
+// BIOS passes control here. We'll just need to trampoline to the
+// real main routine as we cannot trust the segments we were given.
+//
 pub proc _start -> void
 {
     @ xor ax, ax    ;
-    @ mov es, ax    ;
-    @ mov ss, ax    ;
     @ mov ds, ax    ;
+    @ mov es, ax    ;
     @ mov fs, ax    ;
     @ mov gs, ax    ;
+    @ mov ss, ax    ;
     @ jmp 0x00:main ;
 }
 
+//
+// Real entrypoint
+//
 proc main -> void
 {
+    @ cli                                   ;
+    @ cld                                   ;
+    @ mov byte [boot_info.boot_drive], dl   ;
+    @ mov si, boot_str                      ;
+    writestr();
     halt();
 }
 
+//
+// Halt the processor forever
+//
 proc halt -> void
 {
     loop {
-        @ cli ;
-        @ hlt ;
+        @ cli   ;
+        @ hlt   ;
     }
 }
 
+//
+// Write a string using BIOS calls
+//
+proc writestr -> void
+{
+    @ mov ah, 0x0E      ;
+    @ puts_loop:        ;
+    @     lodsb         ;
+    @     or al, al     ;
+    @     jz .exit      ;
+    @     xor bx, bx    ;
+    @     int 0x10      ;
+    @     jmp puts_loop ;
+    @ .exit:            ;
+}
+
+struct boot_vars boot_info;
+
+//
+// Boot strings go here
+//
+// TODO: Use gup strings
+//
+@ boot_str: db "Hello, World!", 0x0D, 0x0A, 0x00 ;
+
 @ times 510 - ($ - $$) db 0 ;
-@ dw 0xAA55 ;
+@ dw 0xAA55                 ;
