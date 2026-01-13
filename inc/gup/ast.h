@@ -30,6 +30,7 @@
  * @AST_ASSIGN: Assignment
  * @AST_NUMBER: A number
  * @AST_EQUALITY: Eqaulity operator
+ * @AST_IF: If statement
  */
 typedef enum {
     AST_NONE,
@@ -47,6 +48,7 @@ typedef enum {
     AST_ASSIGN,
     AST_NUMBER,
     AST_EQUALITY,
+    AST_IF,
 } ast_op_t;
 
 /*

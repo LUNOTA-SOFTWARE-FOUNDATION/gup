@@ -416,6 +416,9 @@ cg_compile_node(struct gup_state *state, struct ast_node *node)
         }
 
         break;
+    case AST_IF:
+        trace_error(state, "IF statements are a TODO\n");
+        return -1;
     default:
         trace_error(state, "bad AST node [type=%d]\n", node->type);
         return -1;

@@ -1099,6 +1099,52 @@ parse_continue(struct gup_state *state, struct token *tok)
     return cg_compile_node(state, root);
 }
 
+static int
+parse_if(struct gup_state *state, struct token *tok)
+{
+    struct ast_node *condition, *root;
+
+    if (state == NULL || tok == NULL) {
+        errno = -EINVAL;
+        return -1;
+    }
+
+    if (tok->type != TT_IF) {
+        errno = -EINVAL;
+        return -1;
+    }
+
+    if (parse_expect(state, tok, TT_LPAREN) < 0) {
+        return -1;
+    }
+
+    if ((condition = parse_binexpr(state, tok)) == NULL) {
+        return -1;
+    }
+
+    if (tok->type != TT_RPAREN) {
+        utok1(state, "RPAREN", tokstr1(tok));
+        return -1;
+    }
+
+    if (parse_expect(state, tok, TT_LBRACE) < 0) {
+        return -1;
+    }
+
+    if (parse_lbrace(state, TT_IF, tok) < 0) {
+        trace_error(state, "parse_lbrace() failure\n");
+        return -1;
+    }
+
+    if (ast_alloc_node(state, AST_IF, &root) < 0) {
+        trace_error(state, "failed to allocate AST_IF\n");
+        return -1;
+    }
+
+    root->right = condition;
+    return cg_compile_node(state, root);
+}
+
 /*
  * Begin parsing tokens from the input source
  *
@@ -1164,6 +1210,12 @@ begin_parse(struct gup_state *state, struct token *tok)
         break;
     case TT_STRUCT:
         if (parse_struct(state, tok) < 0) {
+            return -1;
+        }
+
+        break;
+    case TT_IF:
+        if (parse_if(state, tok) < 0) {
             return -1;
         }
 
