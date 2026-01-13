@@ -5,6 +5,7 @@
 
 #include <stdio.h>
 #include <errno.h>
+#include <string.h>
 #include "gup/trace.h"
 #include "gup/codegen.h"
 #include "gup/mu.h"
@@ -313,6 +314,7 @@ static int
 cg_emit_assign(struct gup_state *state, struct ast_node *node)
 {
     struct ast_node *right, *cur;
+    char label_buf[256];
 
     if (state == NULL || node == NULL) {
         errno = -EINVAL;
@@ -326,14 +328,17 @@ cg_emit_assign(struct gup_state *state, struct ast_node *node)
 
     cur = node->left;
     right = node->right;
-    printf("assigning value of %zd to ", right->v);
+    label_buf[0] = '\0';
+
     while (cur != NULL) {
-        printf("%s", cur->s);
-        if ((cur = cur->right) != NULL)
-            printf(".");
+        strncat(label_buf, cur->s, sizeof(label_buf) - 1);
+        if ((cur = cur->right) == NULL)
+            break;
+
+        strncat(label_buf, ".", sizeof(label_buf) - 1);
     }
 
-    printf("\n");
+    mu_cg_loadvar(state, label_buf, MSIZE_BYTE, right->v);
     return 0;
 }
 

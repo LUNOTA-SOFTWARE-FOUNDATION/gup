@@ -117,6 +117,21 @@ int mu_cg_call(struct gup_state *state, const char *s);
 int mu_cg_struct(struct gup_state *state, struct ast_node *parent);
 
 /*
+ * Emit a load to a label
+ *
+ * @state: Compiler state
+ * @label: Label to load with value
+ * @size:  Size of value to load
+ * @ival:  Immediate value to load
+ *
+ * Returns zero on success
+ */
+int mu_cg_loadvar(
+    struct gup_state *state, const char *label,
+    msize_t size, ssize_t ival
+);
+
+/*
  * Emit a variable
  *
  * @state: Compiler state

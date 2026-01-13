@@ -25,6 +25,15 @@ static const char *dsztab[] = {
     [MSIZE_QWORD] = "dq"
 };
 
+/* <n> size lookup table */
+static const char *sztab[] = {
+    [MSIZE_BAD] = "bad",
+    [MSIZE_BYTE] = "byte",
+    [MSIZE_WORD] = "word",
+    [MSIZE_DWORD] = "dword",
+    [MSIZE_QWORD] = "qword"
+};
+
 /* Return <n> size lookup table */
 static const char *rettab[] = {
     [MSIZE_BAD] = "bad",
@@ -246,6 +255,30 @@ mu_cg_struct(struct gup_state *state, struct ast_node *parent)
 
         cur = cur->right;
     }
+
+    return 0;
+}
+
+int
+mu_cg_loadvar(struct gup_state *state, const char *label, msize_t size, ssize_t ival)
+{
+    if (state == NULL || label == NULL) {
+        errno = -EINVAL;
+        return -1;
+    }
+
+    if (size >= MSIZE_MAX) {
+        errno = -EINVAL;
+        return -1;
+    }
+
+    fprintf(
+        state->out_fp,
+        "\tmov %s [rel %s], %zd\n",
+        sztab[size],
+        label,
+        ival
+    );
 
     return 0;
 }
