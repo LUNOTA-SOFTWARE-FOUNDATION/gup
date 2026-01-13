@@ -66,6 +66,7 @@ static const char *toktab[] = {
     [TT_GT]     = "GREATER-THAN",
     [TT_DOT]    = "DOT",
     [TT_EQUALS] = "EQUALS",
+    [TT_EQUALITY] = "EQUALITY",
     [TT_U8]     = "U8",
     [TT_U16]    = "U16",
     [TT_U32]    = "U32",

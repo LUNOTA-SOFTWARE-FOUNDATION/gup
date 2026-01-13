@@ -474,6 +474,12 @@ lexer_scan(struct gup_state *state, struct token *res)
     case '=':
         res->type = TT_EQUALS;
         res->c = c;
+        if ((c = lexer_nom(state, true)) == '=') {
+            res->type = TT_EQUALITY;
+            return 0;
+        }
+
+        lexer_putback(state, c);
         return 0;
     case '{':
         res->type = TT_LBRACE;

@@ -27,6 +27,7 @@ typedef enum {
     TT_GT,          /* '>' */
     TT_DOT,         /* '.' */
     TT_EQUALS,      /* '=' */
+    TT_EQUALITY,    /* '==' */
     TT_U8,          /* 'u8' */
     TT_U16,         /* 'u16' */
     TT_U32,         /* 'u32' */
