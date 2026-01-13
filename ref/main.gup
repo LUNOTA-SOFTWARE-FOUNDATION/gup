@@ -1,0 +1,61 @@
+//
+// Copyright (c) 2026, Ian Moffett.
+// Provided under the BSD-3 clause.
+//
+
+//
+// Structures are a collection of data bundled together
+// contiguously in memory. They may be represented by
+// using the 'struct' keyword, followed by a name, brace
+// fields, and a terminating brace.
+//
+struct point {
+    u32 x;
+    u32 y;
+}
+
+//
+// Lets define another one called 'foo'! This will have
+// incrementally growing types for the sake of demonstration
+// purposes.
+//
+struct foo {
+    u8 byte;
+    u16 word;
+    u32 dword;
+    u64 qword;
+}
+
+//
+// Instances of the above structures
+//
+struct foo bundle;
+struct point xy_0;
+struct point xy_1;
+
+//
+// Procedures are denoted by the 'proc' keyword, they are by
+// default generated with internal-linkage [private], which is
+// generally the preferred visibility to avoid polluting the
+// global namespace, among other things. Procedures can be made
+// visible by prepending the 'pub' keyword. Along with this,
+// functions must always have a return type, indicated by using
+// the '->' operator followed by a type at the end of the procedure
+// name.
+//
+pub proc main -> u32 {
+    // Structure fields can easily be written or read from
+    // assembly like this
+
+    @ mov byte [rel xy_0.x], 0  ;
+    @ mov byte [rel xy_1.y], 1  ;
+
+    // You may also access them through the '.' operator. As of now,
+    // only byte size loads are supported. Either way, this operation
+    // may be done as follows...
+
+    bundle.byte = 123;
+
+    // Status of zero indicates success... as always
+    return 0;
+}
