@@ -3,21 +3,10 @@
 // Provided under the BSD-3 clause.
 //
 
-typedef void *EfiHandle;
-
 struct EfiTableHdr {
     u64 signature;
     u32 revision;
     u32 hdr_size;
     u32 crc32;
     u32 reserved;
-}
-
-struct EfiSystemTable {
-    EfiTableHdr hdr;
-    i16 *firmware_vendor;
-    u32 firmware_revision;
-    void *efi_handle;
-    EfiHandle console_in_handle;
-    // ...
 }
