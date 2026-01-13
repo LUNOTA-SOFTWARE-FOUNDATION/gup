@@ -954,6 +954,51 @@ parse_return(struct gup_state *state, struct token *tok)
 }
 
 /*
+ * Parse a regular struct field
+ *
+ * @state: Compiler state
+ * @tok:   Last token
+ *
+ * Returns the AST node of the field
+ */
+static struct ast_node *
+parse_struct_field(struct gup_state *state, struct token *tok)
+{
+    char *identifier;
+    struct ast_node *root;
+    struct datum_type type;
+
+    if (parse_type(state, tok, &type) < 0) {
+        return NULL;
+    }
+
+    if (tok->type != TT_IDENT) {
+        utok1(state, "IDENT", tokstr1(tok));
+        return NULL;
+    }
+
+    identifier = ptrbox_strdup(&state->ptrbox, tok->s);
+    if (identifier == NULL) {
+        trace_error(state, "failed to dup identifier\n");
+            return NULL;
+    }
+
+    if (parse_expect(state, tok, TT_SEMI) < 0) {
+        return NULL;
+    }
+
+    /* Allocate a field node */
+    if (ast_alloc_node(state, AST_FIELD, &root) < 0) {
+        trace_error(state, "failed to allocate AST_FIELD\n");
+        return NULL;
+    }
+
+    root->s = identifier;
+    root->field_type = type.type;
+    return root;
+}
+
+/*
  * Parse a struct
  *
  * @state: Compiler state
@@ -966,8 +1011,6 @@ parse_struct(struct gup_state *state, struct token *tok)
     struct ast_node *root = NULL;
     struct ast_node *cur;
     char *struct_name, *instance_name = NULL;
-    char *identifier;
-    struct datum_type type;
     int error;
 
     if (state == NULL || tok == NULL) {
@@ -1065,33 +1108,20 @@ parse_struct(struct gup_state *state, struct token *tok)
             break;
         }
 
-        if (parse_type(state, tok, &type) < 0) {
+        switch (tok->type) {
+        case TT_STRUCT:
+            trace_error(state, "sub-struct fields currently unsupported\n");
             return -1;
-        }
+        default:
+            cur->right = parse_struct_field(state, tok);
+            if (cur->right == NULL) {
+                return -1;
+            }
 
-        if (tok->type != TT_IDENT) {
-            utok1(state, "IDENT", tokstr1(tok));
-            return -1;
-        }
-
-        identifier = ptrbox_strdup(&state->ptrbox, tok->s);
-        if (identifier == NULL) {
-            trace_error(state, "failed to dup identifier\n");
-            return -1;
-        }
-
-        if (parse_expect(state, tok, TT_SEMI) < 0) {
-            return -1;
-        }
-
-        if (ast_alloc_node(state, AST_FIELD, &cur->right) < 0) {
-            trace_error(state, "failed to allocate AST_FIELD\n");
-            return -1;
+            break;
         }
 
         cur = cur->right;
-        cur->s = identifier;
-        cur->field_type = type.type;
     }
 
     symbol->tree = root;
