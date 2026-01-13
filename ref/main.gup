@@ -15,6 +15,14 @@ struct point {
 }
 
 //
+// Type aliases can be made by using the 'type' keyword. The first
+// type specified is the type that should be aliased and the name
+// after the arrow operator defines the alias.
+//
+
+type u32 -> DWORD;
+
+//
 // Lets define another one called 'foo'! This will have
 // incrementally growing types for the sake of demonstration
 // purposes.
@@ -24,6 +32,7 @@ struct foo {
     u16 word;
     u32 dword;
     u64 qword;
+    DWORD dword1;
 }
 
 //
