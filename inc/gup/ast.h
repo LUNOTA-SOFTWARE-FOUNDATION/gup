@@ -29,6 +29,7 @@
  * @AST_ACCESS: Structure access
  * @AST_ASSIGN: Assignment
  * @AST_NUMBER: A number
+ * @AST_EQUALITY: Eqaulity operator
  */
 typedef enum {
     AST_NONE,
@@ -44,7 +45,8 @@ typedef enum {
     AST_FIELD,
     AST_ACCESS,
     AST_ASSIGN,
-    AST_NUMBER
+    AST_NUMBER,
+    AST_EQUALITY,
 } ast_op_t;
 
 /*

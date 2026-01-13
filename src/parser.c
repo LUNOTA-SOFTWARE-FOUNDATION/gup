@@ -649,17 +649,20 @@ parse_call(struct gup_state *state, const char *ident, struct token *tok)
 }
 
 /*
- * Parse a value
+ * Parse a binary expression
  *
  * @state: Compiler state
  * @tok:   Last token
  *
+ * XXX: 'tok' becomes the next after the last of this
+ *      expression
+ *
  * Returns an AST node on success
  */
 static struct ast_node *
-parse_value(struct gup_state *state, struct token *tok)
+parse_binexpr(struct gup_state *state, struct token *tok)
 {
-    struct ast_node *root;
+    struct ast_node *left, *node, *right;
 
     if (state == NULL || tok == NULL) {
         return NULL;
@@ -669,13 +672,51 @@ parse_value(struct gup_state *state, struct token *tok)
         return NULL;
     }
 
-    if (ast_alloc_node(state, AST_NUMBER, &root) < 0) {
+    if (ast_alloc_node(state, AST_NUMBER, &left) < 0) {
         trace_error(state, "failed to allocate AST_NUMBER\n");
         return NULL;
     }
 
-    root->v = tok->v;
-    return root;
+    left->v = tok->v;
+    if (lexer_scan(state, tok) < 0) {
+        ueof(state);
+        return NULL;
+    }
+
+    /*
+     * If this is a binary expression then we'll need to splice
+     * the root with an operator node.
+     */
+    switch (tok->type) {
+    case TT_EQUALITY:
+        if (ast_alloc_node(state, AST_EQUALITY, &node) < 0) {
+            trace_error(state, "failed to allocate AST_EQUALITY\n");
+            return NULL;
+        }
+
+        /* XXX: Perhaps have a seperate function handle values */
+        node->left = left;
+        if (parse_expect(state, tok, TT_NUMBER) < 0) {
+            return NULL;
+        }
+
+        if (ast_alloc_node(state, AST_NUMBER, &right) < 0) {
+            trace_error(state, "failed to allocate AST_NUMBER\n");
+            return NULL;
+        }
+
+        right->v = tok->v;
+        node->right = right;
+        if (lexer_scan(state, tok) < 0) {
+            return NULL;
+        }
+
+        return node;
+    default:
+        break;
+    }
+
+    return left;
 }
 
 /*
@@ -752,11 +793,12 @@ parse_struct_access(struct gup_state *state, char *ident, struct token *tok)
             }
 
             cur->left = root;
-            if ((cur->right = parse_value(state, tok)) == NULL) {
+            if ((cur->right = parse_binexpr(state, tok)) == NULL) {
                 return -1;
             }
 
-            if (parse_expect(state, tok, TT_SEMI) < 0) {
+            if (tok->type != TT_SEMI) {
+                utok1(state, "SEMI", tokstr1(tok));
                 return -1;
             }
 

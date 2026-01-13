@@ -330,6 +330,11 @@ cg_emit_assign(struct gup_state *state, struct ast_node *node)
     right = node->right;
     label_buf[0] = '\0';
 
+    if (right->type != AST_NUMBER) {
+        trace_error(state, "binexpr in assigns not supported yet\n");
+        return -1;
+    }
+
     while (cur != NULL) {
         strncat(label_buf, cur->s, sizeof(label_buf) - 1);
         if ((cur = cur->right) == NULL)
