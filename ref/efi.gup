@@ -5,7 +5,7 @@
 
 type void * -> EfiHandle;
 
-struct EfiTableHdr {
+struct EfiTableHeader {
     u64 signature;
     u32 revision;
     u32 hdr_size;
